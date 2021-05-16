@@ -1,0 +1,75 @@
+from PyQt5 import QtWidgets, QtGui
+from CurrentlyPlayingWidget import CurrentlyPlaying
+
+
+class TabWidget(QtWidgets.QWidget):
+
+    def __init__(self, width=250,*args, **kwargs):
+        super(TabWidget, self).__init__(*args, **kwargs)
+
+        self._previousTab = None
+
+        self.setLayout(QtWidgets.QHBoxLayout())
+        self.layout().setContentsMargins(0, 0, 0, 0)
+
+        tabWidget = QtWidgets.QWidget()
+        tabWidget.setMaximumWidth(width)
+
+        self.tab_playing_holder = QtWidgets.QVBoxLayout(tabWidget)
+        self.tab_Layout = QtWidgets.QVBoxLayout()
+        currently_playing_layout = QtWidgets.QVBoxLayout()
+
+        self.tab_playing_holder.addLayout(self.tab_Layout)
+        self.tab_playing_holder.addLayout(currently_playing_layout)
+
+        self.widgetLayout = QtWidgets.QVBoxLayout()
+
+        self.layout().addWidget(tabWidget)
+        self.layout().addLayout(self.widgetLayout)
+
+        self.button_group = QtWidgets.QButtonGroup()
+        self.button_group.buttonClicked.connect(self.showTab)
+
+        self.currently_playing = CurrentlyPlaying()
+        currently_playing_layout.addWidget(self.currently_playing)
+
+    def showTab(self, btn):
+
+        print(self._previousTab)
+
+        if self._previousTab:
+            index = self.tab_Layout.indexOf(self._previousTab)
+            self.widgetLayout.itemAt(index).widget().hide()
+
+        index = self.tab_Layout.indexOf(btn)
+        self.widgetLayout.itemAt(index).widget().show()
+        self._previousTab = btn
+
+    def addTab(self, widget: QtWidgets.QWidget, text: str, icon=QtGui.QIcon()):
+        tab = QtWidgets.QPushButton(icon, text)
+        tab.setCheckable(True)
+
+        self.button_group.addButton(tab)
+        self.tab_Layout.addWidget(tab)
+        self.widgetLayout.addWidget(widget)
+        widget.hide()
+
+        if not self.button_group.checkedButton():
+            btn = self.tab_Layout.itemAt(0).widget()
+            btn.setChecked(True)
+            self.button_group.buttonClicked.emit(btn)
+
+    def wheelEvent(self, event: QtGui.QWheelEvent) -> None:
+
+        current_index = self.tab_Layout.indexOf(self.button_group.checkedButton())
+        if event.angleDelta().y() < 120:
+
+            current_index += 1
+
+        else:
+            current_index -= 1
+
+        if 0 <= current_index < self.tab_Layout.count():
+            btn = self.tab_Layout.itemAt(current_index).widget()
+            btn.setChecked(True)
+            self.button_group.buttonClicked.emit(btn)
