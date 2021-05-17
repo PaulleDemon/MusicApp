@@ -1,6 +1,10 @@
 from PyQt5 import QtWidgets
 from VerticalTabs import TabWidget
 from ScrollArea import ScrollView
+from Settings import Settings
+from MyMusic import MyMusic
+
+from Controller import Notifier
 
 
 class MainWindow(QtWidgets.QWidget):
@@ -13,13 +17,17 @@ class MainWindow(QtWidgets.QWidget):
 
         tabWidget = TabWidget()
 
-        myMusic = ScrollView()
-        for x in range(20):
-            myMusic.addTile()
+        notify = Notifier()
+
+        myMusic = MyMusic()
+
         favourites = ScrollView()
         musicCollections = ScrollView()
-        settings = ScrollView()
+        settings = Settings()
         statistics = ScrollView()
+
+        notify.register(myMusic)
+        notify.register(settings)
 
         tabWidget.addTab(myMusic, "My Music")
         tabWidget.addTab(favourites, "Favorites")

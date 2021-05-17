@@ -25,13 +25,11 @@ class ScrollView(QtWidgets.QWidget):
 
         self.layout().addWidget(self.scrollArea)
 
-    def addTile(self, image: str=""):
+    def addTile(self, image):
 
         tile = Tile(image, (150, 150))
-        # tile.setMinimumSize(100, 100)
-        tile.setStyleSheet('background-color: red')
+
         self.grid_layout.addWidget(tile, self._row, self._column)
-        print(self.grid_layout.rowCount()-1, self.grid_layout.columnCount()-1)
 
         if self._column == 3:
             self._row += 1
