@@ -4,6 +4,10 @@ from PIL import Image
 
 class Tile(QtWidgets.QWidget):
 
+    play = QtCore.pyqtSignal(bool)
+    addFavourite = QtCore.pyqtSignal(bool)
+    addToCollection = QtCore.pyqtSignal(bool)
+
     def __init__(self, image_path, title="music", size: tuple = (100, 100),*args, **kwargs):
         super(Tile, self).__init__(*args, **kwargs)
 
@@ -35,18 +39,31 @@ class Tile(QtWidgets.QWidget):
         self.btns = QtWidgets.QWidget()
         self.btns.setLayout(QtWidgets.QHBoxLayout())
 
+        btns = QtWidgets.QButtonGroup(self)
+
+        self._play = False
+        self._favourite = False
+
         self.play_btn = QtWidgets.QPushButton(objectName="PlayButton")
         self.play_btn.setToolTip("Play")
+        self.play_btn.setIcon(QtGui.QIcon(r"Resources/PlayButton.png"))
 
         self.favourite = QtWidgets.QPushButton(objectName="favourite")
         self.favourite.setToolTip("Mark Favourite")
+        self.favourite.setIcon(QtGui.QIcon(r"Resources/star_unfilled.png"))
 
         self.collection = QtWidgets.QPushButton(objectName="Collection")
         self.collection.setToolTip("Add to Collection")
+        self.collection.setIcon(QtGui.QIcon(r"Resources/Collections.png"))
 
-        self.btns.layout().addWidget(self.play_btn, alignment=QtCore.Qt.AlignBottom)
-        self.btns.layout().addWidget(self.favourite, alignment=QtCore.Qt.AlignBottom)
+        btns.addButton(self.play_btn)
+        btns.addButton(self.favourite)
+        btns.addButton(self.collection)
+        btns.buttonClicked.connect(self.clicked)
+
         self.btns.layout().addWidget(self.collection, alignment=QtCore.Qt.AlignBottom)
+        self.btns.layout().addWidget(self.favourite, alignment=QtCore.Qt.AlignBottom)
+        self.btns.layout().addWidget(self.play_btn, alignment=QtCore.Qt.AlignBottom)
 
         self.btns.hide()
 
@@ -67,38 +84,72 @@ class Tile(QtWidgets.QWidget):
 
         self._original_size = QtCore.QSize(*size)
         self.setMinimumSize(self._original_size)
-        self.setMaximumSize(self._original_size.width()+25, self._original_size.height()+25)
+        self.setMaximumSize(self._original_size.width()+50, self._original_size.height()+50)
 
-    # def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
-    #
-    #     event.accept()
-    #
-    #     if event.size().width() > event.size().height():
-    #         self.resize(event.size().height(), event.size().height())
-    #
-    #     else:
-    #         self.resize(event.size().width(), event.size().width())
+        self.animation = QtCore.QPropertyAnimation(self, b"geometry")
+        self.animation.setDuration(150)
 
-    def enterEvent(self, a0: QtCore.QEvent):
+    def animate(self, expand):
+        if expand:
+            self.animation.setDirection(self.animation.Forward)
+        else:
+            self.animation.setDirection(self.animation.Backward)
+        self.animation.start()
 
+    def enterEvent(self, a0: QtCore.QEvent) -> None:
+        super(Tile, self).enterEvent(a0)
+        self.animate(True)
         self.btns.show()
-
         self.blur_effect.setEnabled(True)
 
-        self.animation = QtCore.QPropertyAnimation(self, b"geometry")
-        self.animation.setStartValue(QtCore.QRect(self.geometry()))
-        self.animation.setEndValue(QtCore.QRect(self.geometry().adjusted(-25, -25, 25, 25)))
-        self.animation.setDuration(150)
-        self.animation.start(QtCore.QPropertyAnimation.DeleteWhenStopped)
-
-    def leaveEvent(self, a0: QtCore.QEvent):
+    def leaveEvent(self, a0: QtCore.QEvent) -> None:
+        super(Tile, self).leaveEvent(a0)
+        self.animate(False)
         self.btns.hide()
-
         self.blur_effect.setEnabled(False)
 
-        self.animation = QtCore.QPropertyAnimation(self, b"geometry")
-        self.animation.setStartValue(QtCore.QRect(self.geometry()))
-        self.animation.setEndValue(QtCore.QRect(self.geometry().adjusted(25, 25, -25, -25)))
-        self.animation.setDuration(150)
-        self.animation.start(QtCore.QPropertyAnimation.DeleteWhenStopped)
+    def updateAnimation(self):
+        if not self.animation.state():
+            center = self.geometry().center()
+            start = QtCore.QRect(QtCore.QPoint(), self.minimumSize())
+            start.moveCenter(center)
+            self.animation.setStartValue(start)
+            end = QtCore.QRect(QtCore.QPoint(), self.maximumSize())
+            end.moveCenter(center)
+            self.animation.setEndValue(end)
+
+    def moveEvent(self, event):
+        self.updateAnimation()
+
+    def resizeEvent(self, event):
+        self.updateAnimation()
+        if not self.animation.state():
+            rect = QtCore.QRect(QtCore.QPoint(),
+                                self.maximumSize() if self.underMouse() else self.minimumSize())
+            rect.moveCenter(self.geometry().center())
+            self.setGeometry(rect)
+
+    def clicked(self, btn):
+
+        if btn == self.play_btn:
+            self._play = not self._play
+
+            if self._play:
+                self.play_btn.setIcon(QtGui.QIcon(r"Resources/pause.png"))
+
+            else:
+                self.play_btn.setIcon(QtGui.QIcon(r"Resources/PlayButton.png"))
+
+            self.play.emit(self._play)
+
+        elif btn == self.favourite:
+            self._favourite = not self._favourite
+
+            if self._favourite:
+                self.favourite.setIcon(QtGui.QIcon(r"Resources/star_filled.png"))
+
+            else:
+                self.favourite.setIcon(QtGui.QIcon(r"Resources/star_unfilled.png"))
+
+            self.addFavourite.emit(self._favourite)
 

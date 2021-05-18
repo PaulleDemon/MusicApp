@@ -1,13 +1,10 @@
-import io
 import os
-
 from io import BytesIO
 
 import tinytag
-from PIL import ImageQt, Image
-from PyQt5 import QtWidgets, QtGui
+from PIL import Image
+from PyQt5 import QtWidgets
 from ScrollArea import ScrollView
-from mutagen import File
 from tinytag import TinyTag
 
 
