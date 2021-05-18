@@ -38,6 +38,10 @@ class TabWidget(QtWidgets.QWidget):
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
         # self.setStyleSheet('border: 2px solid black')
 
+    def enterEvent(self, a0: QtCore.QEvent):
+        super(TabWidget, self).enterEvent(a0)
+        self.setFocus()
+
     def showTab(self, btn):
 
         if self._previousTab:

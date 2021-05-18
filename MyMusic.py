@@ -1,10 +1,14 @@
+import io
 import os
 
 from io import BytesIO
+
+import tinytag
 from PIL import ImageQt, Image
 from PyQt5 import QtWidgets, QtGui
 from ScrollArea import ScrollView
 from mutagen import File
+from tinytag import TinyTag
 
 
 class MyMusic(QtWidgets.QWidget):
@@ -36,22 +40,26 @@ class MyMusic(QtWidgets.QWidget):
         for path in self.dirs:
             for file in os.listdir(path):
 
-                music_file = File(os.path.join(path, file))
-                if music_file is not None:
+                try:
+                    music_file = TinyTag.get(os.path.join(path, file), image=True)
                     self.music_files.add(music_file)
 
-                    if music_file.get('APIC:') is not None:
-                        self.music_files_covr.append(music_file.get('APIC:').data)
+                except tinytag.TinyTagException:
+                    pass
 
-                    else:
-                        self.music_files_covr.append(None)
+        for music in self.music_files:
+            image = music.get_image()
+            title = music.title
 
-        for music, img in zip(self.music_files, self.music_files_covr):
-            if img is not None:
-                self.view.addTile(Image.open(BytesIO(img)))
+            if not title:
+                title = "Unknown"
+
+            if not image:
+                image = r"Resources/Music.png"
+                self.view.addTile(Image.open(image), title)
 
             else:
-                self.view.addTile(Image.open(r"Resources/Music.png"))
+                self.view.addTile(Image.open(BytesIO(image)), title)
 
     def notify(self):
         pass

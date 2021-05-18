@@ -25,9 +25,13 @@ class ScrollView(QtWidgets.QWidget):
 
         self.layout().addWidget(self.scrollArea)
 
-    def addTile(self, image):
+    def enterEvent(self, a0) -> None:
+        super(ScrollView, self).enterEvent(a0)
+        self.setFocus()
 
-        tile = Tile(image, (150, 150))
+    def addTile(self, image, title):
+
+        tile = Tile(image, title, (150, 150))
 
         self.grid_layout.addWidget(tile, self._row, self._column)
 

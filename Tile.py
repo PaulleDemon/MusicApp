@@ -2,12 +2,10 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PIL import Image
 
 
-class Tile(QtWidgets.QLabel):
+class Tile(QtWidgets.QWidget):
 
-    def __init__(self, image_path, size: tuple = (100, 100),*args, **kwargs):
+    def __init__(self, image_path, title="music", size: tuple = (100, 100),*args, **kwargs):
         super(Tile, self).__init__(*args, **kwargs)
-
-        self.setScaledContents(True)
 
         def pil2pixmap(im):
 
@@ -26,10 +24,13 @@ class Tile(QtWidgets.QLabel):
             pixmap = QtGui.QPixmap.fromImage(qim)
             return pixmap
 
+        self.setLayout(QtWidgets.QVBoxLayout())
 
-        self.setPixmap(pil2pixmap(image_path))
+        self.label = QtWidgets.QLabel()
+        self.label.setScaledContents(True)
+        self.label.setPixmap(pil2pixmap(image_path))
 
-        self.setLayout(QtWidgets.QHBoxLayout())
+        self.music_title = QtWidgets.QLabel(text=title)
 
         self.btns = QtWidgets.QWidget()
         self.btns.setLayout(QtWidgets.QHBoxLayout())
@@ -48,7 +49,21 @@ class Tile(QtWidgets.QLabel):
         self.btns.layout().addWidget(self.collection, alignment=QtCore.Qt.AlignBottom)
 
         self.btns.hide()
+
+        self.blur_effect = QtWidgets.QGraphicsBlurEffect()
+        self.blur_effect.setBlurRadius(2)
+
+        self.shadow_effect = QtWidgets.QGraphicsDropShadowEffect()
+        self.shadow_effect.setBlurRadius(5)
+        self.shadow_effect.setOffset(3, 3)
+        self.btns.setGraphicsEffect(self.shadow_effect)
+
+        self.label.setGraphicsEffect(self.blur_effect)
+        self.blur_effect.setEnabled(False)
+
+        self.layout().addWidget(self.label)
         self.layout().addWidget(self.btns)
+        self.layout().addWidget(self.music_title)
 
         self._original_size = QtCore.QSize(*size)
         self.setMinimumSize(self._original_size)
@@ -68,6 +83,8 @@ class Tile(QtWidgets.QLabel):
 
         self.btns.show()
 
+        self.blur_effect.setEnabled(True)
+
         self.animation = QtCore.QPropertyAnimation(self, b"geometry")
         self.animation.setStartValue(QtCore.QRect(self.geometry()))
         self.animation.setEndValue(QtCore.QRect(self.geometry().adjusted(-25, -25, 25, 25)))
@@ -76,6 +93,8 @@ class Tile(QtWidgets.QLabel):
 
     def leaveEvent(self, a0: QtCore.QEvent):
         self.btns.hide()
+
+        self.blur_effect.setEnabled(False)
 
         self.animation = QtCore.QPropertyAnimation(self, b"geometry")
         self.animation.setStartValue(QtCore.QRect(self.geometry()))
