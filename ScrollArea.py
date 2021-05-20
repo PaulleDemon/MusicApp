@@ -1,5 +1,6 @@
-from PyQt5 import QtWidgets
-from Tile import Tile
+from PyQt5 import QtWidgets, QtCore
+from Tile import MusicTile
+import tinytag
 
 
 class ScrollView(QtWidgets.QWidget):
@@ -9,11 +10,11 @@ class ScrollView(QtWidgets.QWidget):
 
         self.setLayout(QtWidgets.QVBoxLayout())
 
-        widget = QtWidgets.QWidget()
+        self.widget = QtWidgets.QWidget()
 
-        self.grid_layout = QtWidgets.QGridLayout(widget)
+        self.grid_layout = QtWidgets.QGridLayout(self.widget)
         self.scrollArea = QtWidgets.QScrollArea()
-        self.scrollArea.setWidget(widget)
+        self.scrollArea.setWidget(self.widget)
         self.scrollArea.setWidgetResizable(True)
 
         self.grid_layout.setSpacing(50)
@@ -24,15 +25,25 @@ class ScrollView(QtWidgets.QWidget):
         self._column = 0
 
         self.layout().addWidget(self.scrollArea)
+        self.scrollArea.setStyleSheet('background-color: red;')
 
     def enterEvent(self, a0) -> None:
         super(ScrollView, self).enterEvent(a0)
         self.setFocus()
 
-    def addTile(self, image, title):
+    def deleteAll(self):
 
-        tile = Tile(image, title, (250, 250))
+        self.widget.deleteLater()
 
+        self.widget = QtWidgets.QWidget()
+        self.grid_layout = QtWidgets.QGridLayout(self.widget)
+        self.grid_layout.setSpacing(50)
+        self.scrollArea.setWidget(self.widget)
+
+
+    def addTile(self, music: tinytag.TinyTag):
+
+        tile = MusicTile(music, (250, 250))
         self.grid_layout.addWidget(tile, self._row, self._column)
 
         if self._column == 3:

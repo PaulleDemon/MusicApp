@@ -1,9 +1,7 @@
 import os
-from io import BytesIO
 
 import tinytag
-from PIL import Image
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from ScrollArea import ScrollView
 from tinytag import TinyTag
 
@@ -22,17 +20,23 @@ class MyMusic(QtWidgets.QWidget):
         self.music_files = set()
         self.music_files_covr = list()
 
-        self.addSearchDir(r"C:\Users\Paul\Desktop\all folders\english albumsong\english songs")
-
-        self.loadFiles()
-
     def addSearchDir(self, dir):
         self.dirs.add(dir)
 
-    def deleteSearchDir(self, dir):
-        self.dirs.remove(dir)
+    def deleteSearchDir(self, dirs):
+        try:
+            self.dirs.remove(dirs)
+
+        except KeyError:
+            pass
+
+        self.loadFiles()
 
     def loadFiles(self):
+
+        self.view.deleteAll()
+        print("DIRS: ", self.dirs)
+        self.music_files = set()
 
         for path in self.dirs:
             for file in os.listdir(path):
@@ -44,19 +48,12 @@ class MyMusic(QtWidgets.QWidget):
                 except tinytag.TinyTagException:
                     pass
 
-        for music in self.music_files:
-            image = music.get_image()
-            title = music.title
+        for music in self.music_files:  # you gotta clear music files dumb
+            self.view.addTile(music)
 
-            if not title:
-                title = "Unknown"
+    def notify(self, dirs):
 
-            if not image:
-                image = r"Resources/Music.png"
-                self.view.addTile(Image.open(image), title)
+        for dir in dirs:
+            self.addSearchDir(dir)
 
-            else:
-                self.view.addTile(Image.open(BytesIO(image)), title)
-
-    def notify(self):
-        pass
+        self.loadFiles()

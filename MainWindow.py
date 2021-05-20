@@ -26,8 +26,11 @@ class MainWindow(QtWidgets.QWidget):
         settings = Settings()
         statistics = ScrollView()
 
-        notify.register(myMusic)
-        notify.register(settings)
+        # notify.register(myMusic)
+        # notify.register(settings)
+
+        settings.path_added.connect(myMusic.notify)
+        settings.path_deleted.connect(lambda x: myMusic.deleteSearchDir(x))
 
         tabWidget.addTab(myMusic, "My Music")
         tabWidget.addTab(favourites, "Favorites")

@@ -9,10 +9,12 @@ class Notifier:
     def deRegister(self, cls):
         self._notify_lst.remove(cls)
 
-    def notify(self, cls=None):
+    def notify(self, instance=None):
 
-        if cls:
-            cls.notify()
+        if instance:
+            for cls in self._notify_lst:
+                if isinstance(cls, instance):
+                    cls.notify()
 
         else:
             for cls in self._notify_lst:

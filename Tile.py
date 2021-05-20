@@ -1,5 +1,8 @@
+from io import BytesIO
+
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PIL import Image
+from tinytag import TinyTag
 
 
 class Tile(QtWidgets.QWidget):
@@ -8,8 +11,61 @@ class Tile(QtWidgets.QWidget):
     addFavourite = QtCore.pyqtSignal(bool)
     addToCollection = QtCore.pyqtSignal(bool)
 
-    def __init__(self, image_path, title="music", size: tuple = (100, 100),*args, **kwargs):
+    def __init__(self, size: tuple = (100, 100),*args, **kwargs):
         super(Tile, self).__init__(*args, **kwargs)
+
+        self._original_size = QtCore.QSize(*size)
+        self.setMinimumSize(self._original_size)
+        self.setMaximumSize(self._original_size.width()+50, self._original_size.height()+50)
+
+        self.animation = QtCore.QPropertyAnimation(self, b"geometry")
+        self.animation.setDuration(150)
+
+    def animate(self, expand):
+        if expand:
+            self.animation.setDirection(self.animation.Forward)
+        else:
+            self.animation.setDirection(self.animation.Backward)
+        self.animation.start()
+
+    def enterEvent(self, a0: QtCore.QEvent) -> None:
+        super(Tile, self).enterEvent(a0)
+        self.animate(True)
+        self.btns.show()
+        self.blur_effect.setEnabled(True)
+
+    def leaveEvent(self, a0: QtCore.QEvent) -> None:
+        super(Tile, self).leaveEvent(a0)
+        self.animate(False)
+        self.btns.hide()
+        self.blur_effect.setEnabled(False)
+
+    def updateAnimation(self):
+        if not self.animation.state():
+            center = self.geometry().center()
+            start = QtCore.QRect(QtCore.QPoint(), self.minimumSize())
+            start.moveCenter(center)
+            self.animation.setStartValue(start)
+            end = QtCore.QRect(QtCore.QPoint(), self.maximumSize())
+            end.moveCenter(center)
+            self.animation.setEndValue(end)
+
+    def moveEvent(self, event):
+        self.updateAnimation()
+
+    def resizeEvent(self, event):
+        self.updateAnimation()
+        if not self.animation.state():
+            rect = QtCore.QRect(QtCore.QPoint(),
+                                self.maximumSize() if self.underMouse() else self.minimumSize())
+            rect.moveCenter(self.geometry().center())
+            self.setGeometry(rect)
+
+
+class MusicTile(Tile):
+
+    def __init__(self, music: TinyTag, *args, **kwargs):
+        super(MusicTile, self).__init__(*args, **kwargs)
 
         def pil2pixmap(im):
 
@@ -28,11 +84,28 @@ class Tile(QtWidgets.QWidget):
             pixmap = QtGui.QPixmap.fromImage(qim)
             return pixmap
 
+        self.music = music
+
+        image = music.get_image()
+
+        title = music.title
+
+        if not title:
+            title = "Unknown"
+
+        if not image:
+            image = Image.open(r"Resources/Music.png")
+
+        else:
+            image = Image.open(BytesIO(image))
+
+        image = pil2pixmap(image)
+
         self.setLayout(QtWidgets.QVBoxLayout())
 
         self.label = QtWidgets.QLabel()
+        self.label.setPixmap(image)
         self.label.setScaledContents(True)
-        self.label.setPixmap(pil2pixmap(image_path))
 
         self.music_title = QtWidgets.QLabel(text=title)
 
@@ -82,52 +155,8 @@ class Tile(QtWidgets.QWidget):
         self.layout().addWidget(self.btns)
         self.layout().addWidget(self.music_title)
 
-        self._original_size = QtCore.QSize(*size)
-        self.setMinimumSize(self._original_size)
-        self.setMaximumSize(self._original_size.width()+50, self._original_size.height()+50)
-
-        self.animation = QtCore.QPropertyAnimation(self, b"geometry")
-        self.animation.setDuration(150)
-
-    def animate(self, expand):
-        if expand:
-            self.animation.setDirection(self.animation.Forward)
-        else:
-            self.animation.setDirection(self.animation.Backward)
-        self.animation.start()
-
-    def enterEvent(self, a0: QtCore.QEvent) -> None:
-        super(Tile, self).enterEvent(a0)
-        self.animate(True)
-        self.btns.show()
-        self.blur_effect.setEnabled(True)
-
-    def leaveEvent(self, a0: QtCore.QEvent) -> None:
-        super(Tile, self).leaveEvent(a0)
-        self.animate(False)
-        self.btns.hide()
-        self.blur_effect.setEnabled(False)
-
-    def updateAnimation(self):
-        if not self.animation.state():
-            center = self.geometry().center()
-            start = QtCore.QRect(QtCore.QPoint(), self.minimumSize())
-            start.moveCenter(center)
-            self.animation.setStartValue(start)
-            end = QtCore.QRect(QtCore.QPoint(), self.maximumSize())
-            end.moveCenter(center)
-            self.animation.setEndValue(end)
-
-    def moveEvent(self, event):
-        self.updateAnimation()
-
-    def resizeEvent(self, event):
-        self.updateAnimation()
-        if not self.animation.state():
-            rect = QtCore.QRect(QtCore.QPoint(),
-                                self.maximumSize() if self.underMouse() else self.minimumSize())
-            rect.moveCenter(self.geometry().center())
-            self.setGeometry(rect)
+    def getMusic(self) -> TinyTag:
+        return self.music
 
     def clicked(self, btn):
 
@@ -152,4 +181,3 @@ class Tile(QtWidgets.QWidget):
                 self.favourite.setIcon(QtGui.QIcon(r"Resources/star_unfilled.png"))
 
             self.addFavourite.emit(self._favourite)
-
