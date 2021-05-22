@@ -1,28 +1,18 @@
-import os
-
-import tinytag
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from CustomWidgets.Tile import MusicTile
-from CustomWidgets.ScrollArea import ScrollView
-from tinytag import TinyTag
 
-
-class MyMusic(QtWidgets.QWidget):
+class Favourite(QtWidgets.QWidget):
 
     play = QtCore.pyqtSignal(bool, str, QtGui.QPixmap)  # path
     addFavourite = QtCore.pyqtSignal(bool)
-    addToCollection = QtCore.pyqtSignal(bool)
 
-    def __init__(self, notifier, *args, **kwargs):
-        super(MyMusic, self).__init__(*args, **kwargs)
-
-        self.noifier = notifier
+    def __init__(self, *args, **kwargs):
+        super(Favourite, self).__init__(*args, **kwargs)
 
         self.setLayout(QtWidgets.QVBoxLayout())
 
         self.view = MusicScrollView()
-        self.view.play.connect(self.noifier.loadObject)
+        self.view.play.connect(lambda x, path, pixmap: self.play.emit(x, path, pixmap))
 
         self.layout().addWidget(self.view)
 
@@ -51,27 +41,9 @@ class MyMusic(QtWidgets.QWidget):
         self.loadFiles()
 
     def loadFiles(self):
+        pass
 
-        self.view.deleteAll()
-
-        self.music_files = list()
-        self.file_path = list()
-
-        for path in self.dirs:
-            for file in os.listdir(path):
-
-                try:
-                    music_file = TinyTag.get(os.path.join(path, file), image=True)
-                    self.music_files.append(music_file)
-                    self.file_path.append(os.path.join(path, file))
-
-                except tinytag.TinyTagException:
-                    pass
-
-        for music, file in zip(self.music_files, self.file_path):
-            self.view.addTile(music, file)
-
-    def getFilePaths(self)-> list:
+    def getFilePaths(self):
         return self.file_path
 
     def getProperties(self):
@@ -87,7 +59,7 @@ class MyMusic(QtWidgets.QWidget):
 
 class MusicScrollView(ScrollView):
 
-    play = QtCore.pyqtSignal(object)  # path
+    play = QtCore.pyqtSignal(bool, str, QtGui.QPixmap)  # path
     addFavourite = QtCore.pyqtSignal(bool, str, QtGui.QPixmap)
     addToCollection = QtCore.pyqtSignal(bool)
 
@@ -98,10 +70,18 @@ class MusicScrollView(ScrollView):
     def currentlyPlaying(self):
         return self.currently_playing_tile
 
+    def _play(self, x, path, pixmap, obj):
+
+        if self.currently_playing_tile:
+            self.currently_playing_tile.playMusic()
+
+        self.currently_playing_tile = obj
+        self.play.emit(x, path, pixmap)
+
     def addTile(self, music: tinytag.TinyTag, file=""):
 
         tile = MusicTile(music, file, (250, 250))
-        tile.playing.connect(lambda obj : self.play.emit(obj))
+        tile.playing.connect(self._play)
 
         self.grid_layout.addWidget(tile, self._row, self._column)
 

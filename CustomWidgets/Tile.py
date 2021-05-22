@@ -21,6 +21,12 @@ class Tile(QtWidgets.QWidget):
         self.animation = QtCore.QPropertyAnimation(self, b"geometry")
         self.animation.setDuration(150)
 
+    def play(self):
+        raise NotImplementedError("Must implement play")
+
+    def pause(self):
+        raise NotImplementedError("Must implement pause")
+
     def animate(self, expand):
         if expand:
             self.animation.setDirection(self.animation.Forward)
@@ -64,8 +70,8 @@ class Tile(QtWidgets.QWidget):
 
 class MusicTile(Tile):
 
-    play = QtCore.pyqtSignal(bool, str, QtGui.QPixmap, object) # path
-    addFavourite = QtCore.pyqtSignal(bool)
+    playing = QtCore.pyqtSignal(object) # path
+    addFavourite = QtCore.pyqtSignal(bool, str, QtGui.QPixmap)
     addToCollection = QtCore.pyqtSignal(bool)
 
     def __init__(self, music: TinyTag, file_path="", *args, **kwargs):
@@ -176,14 +182,17 @@ class MusicTile(Tile):
     def getThumbnail(self):
         return self.label.pixmap()
 
+    def getTitle(self):
+        return self.music_title.text()
+
     def properties(self):
         return [self._playing, self._favourite, self._collection]
 
     def pause(self):
-        self.play_btn.setIcon(QtGui.QIcon(Paths.PAUSE))
-
-    def playMusic(self):
         self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
+
+    def play(self):
+        self.play_btn.setIcon(QtGui.QIcon(Paths.PAUSE))
 
     def clicked(self, btn):
 
@@ -191,12 +200,12 @@ class MusicTile(Tile):
             self._playing = not self._playing
 
             if self._playing:
-                self.play_btn.setIcon(QtGui.QIcon(Paths.PAUSE))
+                self.play()
 
             else:
-                self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
+               self.pause()
 
-            self.play.emit(self._playing, self.file_path, self.getThumbnail(), self)
+            self.playing.emit(self)
 
         elif btn == self.favourite:
             self._favourite = not self._favourite
@@ -207,4 +216,9 @@ class MusicTile(Tile):
             else:
                 self.favourite.setIcon(QtGui.QIcon(Paths.STAR_UNFILLED))
 
-            self.addFavourite.emit(self._favourite)
+            self.addFavourite.emit(self._favourite, self.file_path, self.getThumbnail())
+
+
+# class FavouritesTile(Tile):
+#
+#     def __init__(self, title, pixmap, file_path, ):

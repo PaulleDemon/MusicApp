@@ -4,9 +4,9 @@ from CustomWidgets.CurrentlyPlayingWidget import CurrentlyPlaying
 
 class TabWidget(QtWidgets.QWidget):
 
-    playing = QtCore.pyqtSignal(bool)
+    # playing = QtCore.pyqtSignal(bool)
 
-    def __init__(self, width=250,*args, **kwargs):
+    def __init__(self, width=250, *args, **kwargs):
         super(TabWidget, self).__init__(*args, **kwargs)
 
         self._previousTab = None
@@ -24,7 +24,8 @@ class TabWidget(QtWidgets.QWidget):
         currently_playing_layout = QtWidgets.QVBoxLayout()
 
         self.currently_playing = CurrentlyPlaying()
-        self.currently_playing.playing.connect(lambda x: self.playing.emit(x))
+        print("Player: ", self.currently_playing)
+        # self.currently_playing.playing.connect(lambda x: self.playing.emit(x))
         currently_playing_layout.addWidget(self.currently_playing)
 
 
@@ -41,23 +42,8 @@ class TabWidget(QtWidgets.QWidget):
 
         self.setFocusPolicy(QtCore.Qt.ClickFocus)
 
-    def setPath(self, path):
-        self.currently_playing.setCurrentPath(path)
-
-    def loadFile(self):
-        self.currently_playing.load_file()
-
-    def play(self):
-        self.currently_playing.play_current()
-
-    def setThumbnail(self, pixmap):
-        self.currently_playing.setThumbNail(pixmap)
-
-    def pause(self):
-        self.currently_playing.pause()
-
-    def currentlyPlaying(self):
-        return self.currently_playing.current_file
+    def player_object(self):
+        return self.currently_playing
 
     def enterEvent(self, a0: QtCore.QEvent):
         super(TabWidget, self).enterEvent(a0)

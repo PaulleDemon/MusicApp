@@ -1,5 +1,6 @@
 from PyQt5 import QtWidgets, QtGui
 
+import Controller
 import DB_Operations
 from CustomWidgets.CurrentlyPlayingWidget import CurrentlyPlaying
 from CustomWidgets.VerticalTabs import TabWidget
@@ -21,16 +22,19 @@ class MainWindow(QtWidgets.QWidget):
 
         self.db_handler = DB_Operations.DBHandler()
 
+        self.notifier = Controller.Notifier()
+
         self.tabWidget = TabWidget()
-        self.tabWidget.playing.connect(self.pause)
-        self.myMusic = MyMusic()
+        self.notifier.setPlayer(self.tabWidget.player_object())
+
+        self.myMusic = MyMusic(self.notifier)
 
         self.favourites = ScrollView()
         self.musicCollections = ScrollView()
         self.settings = Settings()
         self.statistics = ScrollView()
 
-        self.myMusic.play.connect(self.play_pause)
+        # self.myMusic.play.connect(self.play_pause)
 
         self.settings.path_added.connect(self.myMusic.notify)
         self.settings.path_deleted.connect(lambda x: self.myMusic.deleteSearchDir(x))
@@ -43,28 +47,6 @@ class MainWindow(QtWidgets.QWidget):
 
         self.layout().addWidget(self.tabWidget)
 
-    def pause(self, x):
-
-        if x:
-            self.myMusic.pause()
-
-        else:
-            self.myMusic.playMusic()
-
-    def play_pause(self, play: bool, path: str, pixmap: QtGui.QPixmap):
-
-        print(repr(self.tabWidget.currentlyPlaying()), repr(path), "\n", self.tabWidget.currentlyPlaying() != path)
-        print(play)
-        if self.tabWidget.currentlyPlaying() != path:
-            self.tabWidget.setPath(path)
-            self.tabWidget.setThumbnail(pixmap)
-            self.tabWidget.loadFile()
-
-        if play:
-           self.tabWidget.play()
-
-        else:
-            self.tabWidget.pause()
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
 
