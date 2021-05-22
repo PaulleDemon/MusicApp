@@ -1,10 +1,11 @@
-from PyQt5 import QtWidgets
-from VerticalTabs import TabWidget
-from ScrollArea import ScrollView
-from Settings import Settings
-from MyMusic import MyMusic
+from PyQt5 import QtWidgets, QtGui
 
-from Controller import Notifier
+import DB_Operations
+from CustomWidgets.CurrentlyPlayingWidget import CurrentlyPlaying
+from CustomWidgets.VerticalTabs import TabWidget
+from CustomWidgets.ScrollArea import ScrollView
+from Tabs.Settings import Settings
+from Tabs.MyMusic import MyMusic
 
 
 class MainWindow(QtWidgets.QWidget):
@@ -12,31 +13,68 @@ class MainWindow(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
 
+        with open(r"Resources/DarkTheme.qss") as file:
+            self.setStyleSheet(file.read())
+
         self.setLayout(QtWidgets.QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
-        tabWidget = TabWidget()
+        self.db_handler = DB_Operations.DBHandler()
 
-        notify = Notifier()
+        self.tabWidget = TabWidget()
+        self.tabWidget.playing.connect(self.pause)
+        self.myMusic = MyMusic()
 
-        myMusic = MyMusic()
+        self.favourites = ScrollView()
+        self.musicCollections = ScrollView()
+        self.settings = Settings()
+        self.statistics = ScrollView()
 
-        favourites = ScrollView()
-        musicCollections = ScrollView()
-        settings = Settings()
-        statistics = ScrollView()
+        self.myMusic.play.connect(self.play_pause)
 
-        # notify.register(myMusic)
-        # notify.register(settings)
+        self.settings.path_added.connect(self.myMusic.notify)
+        self.settings.path_deleted.connect(lambda x: self.myMusic.deleteSearchDir(x))
 
-        settings.path_added.connect(myMusic.notify)
-        settings.path_deleted.connect(lambda x: myMusic.deleteSearchDir(x))
+        self.tabWidget.addTab(self.myMusic, "My Music")
+        self.tabWidget.addTab(self.favourites, "Favorites")
+        self.tabWidget.addTab(self.musicCollections, "Collections")
+        self.tabWidget.addTab(self.settings, "Settings")
+        self.tabWidget.addTab(self.statistics, "Statistics")
 
-        tabWidget.addTab(myMusic, "My Music")
-        tabWidget.addTab(favourites, "Favorites")
-        tabWidget.addTab(musicCollections, "Collections")
-        tabWidget.addTab(settings, "Settings")
-        tabWidget.addTab(statistics, "Statistics")
+        self.layout().addWidget(self.tabWidget)
 
-        self.layout().addWidget(tabWidget)
+    def pause(self, x):
 
+        if x:
+            self.myMusic.pause()
+
+        else:
+            self.myMusic.playMusic()
+
+    def play_pause(self, play: bool, path: str, pixmap: QtGui.QPixmap):
+
+        print(repr(self.tabWidget.currentlyPlaying()), repr(path), "\n", self.tabWidget.currentlyPlaying() != path)
+        print(play)
+        if self.tabWidget.currentlyPlaying() != path:
+            self.tabWidget.setPath(path)
+            self.tabWidget.setThumbnail(pixmap)
+            self.tabWidget.loadFile()
+
+        if play:
+           self.tabWidget.play()
+
+        else:
+            self.tabWidget.pause()
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+
+        # directories = self.settings.directories()
+        # files = self.myMusic.getFilePaths()
+        #
+        # self.db_handler.insertToPaths(directories)
+        # self.db_handler.insertToFiles(files)
+        #
+        # print("Files: ", self.db_handler.getFiles())
+        # print(self.db_handler.getPaths())
+
+        super(MainWindow, self).closeEvent(a0)

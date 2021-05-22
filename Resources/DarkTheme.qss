@@ -1,0 +1,61 @@
+QWidget{
+    background-color: #252f4a;
+}
+
+
+QLabel{
+    color: #ffffff;
+    background-color: transparent;
+    font-size: 14px;
+}
+
+QPushButton{
+    color: #ffffff;
+    height: 40px;
+    background-color: #1291cc;
+    border-radius: 2px;
+    font-size: 18px;
+}
+
+QPushButton:hover{
+    border: 2px solid #1b24de;
+}
+
+QPushButton:checked{
+    background-color: #0e5d9e;
+}
+
+QLineEdit{
+    color: #ffffff;
+    border-radius: 2px;
+    border: 1px solid #ffffff;
+    height: 30px;
+}
+
+
+#EditableLabel QLineEdit[valid="false"]{
+border: 2px solid red;
+}
+
+#EditableLabel QPushButton{
+    width: 50px;
+    background-color: #0c8fc7;
+}
+
+#EditableLabel QPushButton:hover{
+    background-color: #096c96;
+}
+
+#Tile{
+    border-radius: 2px;
+    background-color: red;
+}
+
+#Tile QWidget{
+    background-color: transparent;
+    border-radius: 2px;
+}
+
+QScrollArea QWidget{
+    background-color: #1d2438;
+}

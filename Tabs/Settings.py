@@ -1,6 +1,7 @@
 import os
 from PyQt5 import QtWidgets, QtGui, QtCore
 
+import Paths
 from Controller import Notifier
 
 
@@ -79,6 +80,8 @@ class EditableLabel(QtWidgets.QWidget):
 
         self._valid = False
 
+        self.setObjectName("EditableLabel")
+
         self.setLayout(QtWidgets.QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
@@ -87,23 +90,23 @@ class EditableLabel(QtWidgets.QWidget):
         self.path_edit.setProperty("Valid", "false")
         self.path_edit.textChanged.connect(self.validate)
 
-        self.select_folder_btn = QtWidgets.QPushButton(icon=QtGui.QIcon(r"Resources/Folder.png"))
+        self.select_folder_btn = QtWidgets.QPushButton(icon=QtGui.QIcon(Paths.FOLDER))
+        self.select_folder_btn.setIconSize(QtCore.QSize(30, 30))
         self.select_folder_btn.clicked.connect(self.select_path)
         self.select_folder_btn.setToolTip("Select folder")
 
         self.delete_path_btn = QtWidgets.QPushButton("x")
         self.delete_path_btn.setToolTip("Remove")
         self.delete_path_btn.clicked.connect(self.remove_path)
-        self.delete_path_btn.setFixedWidth(25)
+        # self.delete_path_btn.setFixedWidth(25)
 
         self.layout().addWidget(self.path_edit)
         self.layout().addWidget(self.select_folder_btn)
         self.layout().addWidget(self.delete_path_btn)
 
-        self.path_edit.setStyleSheet("QLineEdit[valid='false']{border: 2px solid red;}")
 
     def select_path(self):
-        file = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Directory"))
+        file = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Tabs"))
         self.path_edit.setText(file)
 
     def valid(self)->bool:

@@ -1,5 +1,7 @@
-from io import BytesIO
+import ntpath
+import Paths
 
+from io import BytesIO
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PIL import Image
 from tinytag import TinyTag
@@ -7,12 +9,10 @@ from tinytag import TinyTag
 
 class Tile(QtWidgets.QWidget):
 
-    play = QtCore.pyqtSignal(bool)
-    addFavourite = QtCore.pyqtSignal(bool)
-    addToCollection = QtCore.pyqtSignal(bool)
-
     def __init__(self, size: tuple = (100, 100),*args, **kwargs):
         super(Tile, self).__init__(*args, **kwargs)
+
+        self.setObjectName("Tile")
 
         self._original_size = QtCore.QSize(*size)
         self.setMinimumSize(self._original_size)
@@ -64,7 +64,11 @@ class Tile(QtWidgets.QWidget):
 
 class MusicTile(Tile):
 
-    def __init__(self, music: TinyTag, *args, **kwargs):
+    play = QtCore.pyqtSignal(bool, str, QtGui.QPixmap, object) # path
+    addFavourite = QtCore.pyqtSignal(bool)
+    addToCollection = QtCore.pyqtSignal(bool)
+
+    def __init__(self, music: TinyTag, file_path="", *args, **kwargs):
         super(MusicTile, self).__init__(*args, **kwargs)
 
         def pil2pixmap(im):
@@ -90,11 +94,16 @@ class MusicTile(Tile):
 
         title = music.title
 
+        self.file_path = file_path
+
+        if title and title.isspace():
+            title = ""
+
         if not title:
-            title = "Unknown"
+            title = ntpath.basename(file_path)
 
         if not image:
-            image = Image.open(r"Resources/Music.png")
+            image = Image.open(Paths.UNKNOWN_MUSIC)
 
         else:
             image = Image.open(BytesIO(image))
@@ -102,6 +111,8 @@ class MusicTile(Tile):
         image = pil2pixmap(image)
 
         self.setLayout(QtWidgets.QVBoxLayout())
+
+        self.setObjectName("MusicTile")
 
         self.label = QtWidgets.QLabel()
         self.label.setPixmap(image)
@@ -114,20 +125,21 @@ class MusicTile(Tile):
 
         btns = QtWidgets.QButtonGroup(self)
 
-        self._play = False
+        self._playing = False
         self._favourite = False
+        self._collection = None
 
         self.play_btn = QtWidgets.QPushButton(objectName="PlayButton")
         self.play_btn.setToolTip("Play")
-        self.play_btn.setIcon(QtGui.QIcon(r"Resources/PlayButton.png"))
+        self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
 
         self.favourite = QtWidgets.QPushButton(objectName="favourite")
         self.favourite.setToolTip("Mark Favourite")
-        self.favourite.setIcon(QtGui.QIcon(r"Resources/star_unfilled.png"))
+        self.favourite.setIcon(QtGui.QIcon(Paths.STAR_UNFILLED))
 
         self.collection = QtWidgets.QPushButton(objectName="Collection")
         self.collection.setToolTip("Add to Collection")
-        self.collection.setIcon(QtGui.QIcon(r"Resources/Collections.png"))
+        self.collection.setIcon(QtGui.QIcon(Paths.COLLECTION))
 
         btns.addButton(self.play_btn)
         btns.addButton(self.favourite)
@@ -158,26 +170,41 @@ class MusicTile(Tile):
     def getMusic(self) -> TinyTag:
         return self.music
 
+    def getFile(self):
+        return self.file_path
+
+    def getThumbnail(self):
+        return self.label.pixmap()
+
+    def properties(self):
+        return [self._playing, self._favourite, self._collection]
+
+    def pause(self):
+        self.play_btn.setIcon(QtGui.QIcon(Paths.PAUSE))
+
+    def playMusic(self):
+        self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
+
     def clicked(self, btn):
 
         if btn == self.play_btn:
-            self._play = not self._play
+            self._playing = not self._playing
 
-            if self._play:
-                self.play_btn.setIcon(QtGui.QIcon(r"Resources/pause.png"))
+            if self._playing:
+                self.play_btn.setIcon(QtGui.QIcon(Paths.PAUSE))
 
             else:
-                self.play_btn.setIcon(QtGui.QIcon(r"Resources/PlayButton.png"))
+                self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
 
-            self.play.emit(self._play)
+            self.play.emit(self._playing, self.file_path, self.getThumbnail(), self)
 
         elif btn == self.favourite:
             self._favourite = not self._favourite
 
             if self._favourite:
-                self.favourite.setIcon(QtGui.QIcon(r"Resources/star_filled.png"))
+                self.favourite.setIcon(QtGui.QIcon(Paths.STAR_FILLED))
 
             else:
-                self.favourite.setIcon(QtGui.QIcon(r"Resources/star_unfilled.png"))
+                self.favourite.setIcon(QtGui.QIcon(Paths.STAR_UNFILLED))
 
             self.addFavourite.emit(self._favourite)
