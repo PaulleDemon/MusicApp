@@ -37,8 +37,13 @@ class Tile(QtWidgets.QWidget):
     def enterEvent(self, a0: QtCore.QEvent) -> None:
         super(Tile, self).enterEvent(a0)
         self.animate(True)
-        self.btns.show()
-        self.blur_effect.setEnabled(True)
+
+        try:
+            self.btns.show()
+            self.blur_effect.setEnabled(True)
+
+        except:
+            raise NotImplementedError("self.btns but be a variable in hild class")
 
     def leaveEvent(self, a0: QtCore.QEvent) -> None:
         super(Tile, self).leaveEvent(a0)
@@ -71,7 +76,7 @@ class Tile(QtWidgets.QWidget):
 class MusicTile(Tile):
 
     playing = QtCore.pyqtSignal(object) # path
-    addFavourite = QtCore.pyqtSignal(bool, str, QtGui.QPixmap)
+    addFavourite = QtCore.pyqtSignal(object)
     addToCollection = QtCore.pyqtSignal(bool)
 
     def __init__(self, music: TinyTag, file_path="", *args, **kwargs):
@@ -125,6 +130,7 @@ class MusicTile(Tile):
         self.label.setScaledContents(True)
 
         self.music_title = QtWidgets.QLabel(text=title)
+        self.setToolTip(title)
 
         self.btns = QtWidgets.QWidget()
         self.btns.setLayout(QtWidgets.QHBoxLayout())
@@ -173,6 +179,8 @@ class MusicTile(Tile):
         self.layout().addWidget(self.btns)
         self.layout().addWidget(self.music_title)
 
+        self._children = set()
+
     def getMusic(self) -> TinyTag:
         return self.music
 
@@ -188,15 +196,45 @@ class MusicTile(Tile):
     def properties(self):
         return [self._playing, self._favourite, self._collection]
 
+    def addChild(self, child):
+        self._children.add(child)
+
+    def removeChild(self, child):
+        try:
+            self._children.remove(child)
+        except KeyError:
+            pass
+
+    def children(self):
+        return self._children
+
+    def isPlaying(self):
+        return self._playing
+
+    def update_children(self):
+        print("Updating")
+        for item in self._children:
+            print(item)
+            if self.isPlaying():
+                print("PLaying")
+                item.update_play()
+
+            else:
+                item.update_pause()
+
     def pause(self):
         self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
+        self._playing = False
+        self.update_children()
 
     def play(self):
         self.play_btn.setIcon(QtGui.QIcon(Paths.PAUSE))
+        self._playing = True
+        self.update_children()
 
-    def clicked(self, btn):
-
-        if btn == self.play_btn:
+    def clicked(self, btn: QtWidgets.QPushButton=None):
+        obj_name = btn.objectName()
+        if obj_name == "PlayButton":
             self._playing = not self._playing
 
             if self._playing:
@@ -206,8 +244,9 @@ class MusicTile(Tile):
                self.pause()
 
             self.playing.emit(self)
+            self.update_children()
 
-        elif btn == self.favourite:
+        elif obj_name == "favourite":
             self._favourite = not self._favourite
 
             if self._favourite:
@@ -216,9 +255,81 @@ class MusicTile(Tile):
             else:
                 self.favourite.setIcon(QtGui.QIcon(Paths.STAR_UNFILLED))
 
-            self.addFavourite.emit(self._favourite, self.file_path, self.getThumbnail())
+            self.addFavourite.emit(self)
 
 
-# class FavouritesTile(Tile):
-#
-#     def __init__(self, title, pixmap, file_path, ):
+class FavouritesTile(Tile):
+
+    def __init__(self, parent: MusicTile, *args, **kwargs):
+        super(FavouritesTile, self).__init__(*args, **kwargs)
+
+        self.setLayout(QtWidgets.QVBoxLayout())
+        self.parent = parent
+        self.parent.addChild(self)
+
+        self.thumb_nail = QtWidgets.QLabel()
+        self.thumb_nail.setScaledContents(True)
+        self.thumb_nail.setPixmap(self.parent.getThumbnail())
+
+        self.title = QtWidgets.QLabel(self.parent.getTitle())
+
+        btns = QtWidgets.QButtonGroup(self)
+
+        self.play_btn = QtWidgets.QPushButton(objectName="PlayButton")
+        self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
+
+        self.favourite = QtWidgets.QPushButton(objectName="favourite")
+        self.favourite.setToolTip("remove from favourite")
+        self.favourite.setIcon(QtGui.QIcon(Paths.STAR_FILLED))
+
+        if self.parent.isPlaying():
+            self.update_play()
+
+        btns.addButton(self.play_btn)
+        btns.addButton(self.favourite)
+        btns.buttonClicked.connect(self.clicked)
+
+        self.btns = QtWidgets.QWidget()
+        self.btns.setLayout(QtWidgets.QHBoxLayout())
+
+        self.btns.layout().addWidget(self.favourite, alignment=QtCore.Qt.AlignBottom)
+        self.btns.layout().addWidget(self.play_btn, alignment=QtCore.Qt.AlignBottom)
+
+        self.blur_effect = QtWidgets.QGraphicsBlurEffect()
+        self.blur_effect.setBlurRadius(2)
+
+        self.shadow_effect = QtWidgets.QGraphicsDropShadowEffect()
+        self.shadow_effect.setBlurRadius(5)
+        self.shadow_effect.setOffset(3, 3)
+        self.btns.setGraphicsEffect(self.shadow_effect)
+
+        self.thumb_nail.setGraphicsEffect(self.blur_effect)
+        self.blur_effect.setEnabled(False)
+
+        self.layout().addWidget(self.thumb_nail)
+        self.layout().addWidget(self.title)
+
+        self.layout().addWidget(self.btns)
+
+    def update_play(self):
+        self.play_btn.setIcon(QtGui.QIcon(Paths.PAUSE))
+
+    def update_pause(self):
+        self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
+
+    def pause(self):
+        self.update_pause()
+        self.parent.clicked(self.play_btn)
+
+    def play(self):
+        self.update_play()
+        self.parent.clicked(self.play_btn)
+
+    def clicked(self, btn):
+
+        if btn == self.play_btn:
+            if self.parent.isPlaying():
+                self.pause()
+
+            else:
+                self.play()

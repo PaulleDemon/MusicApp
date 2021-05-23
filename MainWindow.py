@@ -5,8 +5,7 @@ import DB_Operations
 from CustomWidgets.CurrentlyPlayingWidget import CurrentlyPlaying
 from CustomWidgets.VerticalTabs import TabWidget
 from CustomWidgets.ScrollArea import ScrollView
-from Tabs.Settings import Settings
-from Tabs.MyMusic import MyMusic
+from Tabs import Settings, MyMusic, Favourites
 
 
 class MainWindow(QtWidgets.QWidget):
@@ -25,16 +24,15 @@ class MainWindow(QtWidgets.QWidget):
         self.notifier = Controller.Notifier()
 
         self.tabWidget = TabWidget()
-        self.notifier.setPlayer(self.tabWidget.player_object())
 
-        self.myMusic = MyMusic(self.notifier)
-
-        self.favourites = ScrollView()
+        self.myMusic = MyMusic.MyMusic(self.notifier)
+        self.favourites = Favourites.Favourite()
         self.musicCollections = ScrollView()
-        self.settings = Settings()
+        self.settings = Settings.Settings()
         self.statistics = ScrollView()
 
-        # self.myMusic.play.connect(self.play_pause)
+        self.notifier.setPlayer(self.tabWidget.player_object())
+        self.notifier.setFavouriteTab(self.favourites)
 
         self.settings.path_added.connect(self.myMusic.notify)
         self.settings.path_deleted.connect(lambda x: self.myMusic.deleteSearchDir(x))

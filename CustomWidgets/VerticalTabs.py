@@ -4,7 +4,6 @@ from CustomWidgets.CurrentlyPlayingWidget import CurrentlyPlaying
 
 class TabWidget(QtWidgets.QWidget):
 
-    # playing = QtCore.pyqtSignal(bool)
 
     def __init__(self, width=250, *args, **kwargs):
         super(TabWidget, self).__init__(*args, **kwargs)
@@ -24,10 +23,7 @@ class TabWidget(QtWidgets.QWidget):
         currently_playing_layout = QtWidgets.QVBoxLayout()
 
         self.currently_playing = CurrentlyPlaying()
-        print("Player: ", self.currently_playing)
-        # self.currently_playing.playing.connect(lambda x: self.playing.emit(x))
         currently_playing_layout.addWidget(self.currently_playing)
-
 
         self.tab_playing_holder.addLayout(self.tab_Layout)
         self.tab_playing_holder.addLayout(currently_playing_layout)

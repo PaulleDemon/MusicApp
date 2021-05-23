@@ -17,25 +17,50 @@ class MyMusic(QtWidgets.QWidget):
     def __init__(self, notifier, *args, **kwargs):
         super(MyMusic, self).__init__(*args, **kwargs)
 
-        self.noifier = notifier
+        self.notifier = notifier
 
         self.setLayout(QtWidgets.QVBoxLayout())
 
         self.view = MusicScrollView()
-        self.view.play.connect(self.noifier.loadObject)
+        self.view.play.connect(self.notifier.loadObject)
+        self.view.addFavourite.connect(self.notifier.markFavourite)
 
+        self.search_bar = QtWidgets.QLineEdit()
+        self.search_bar.setPlaceholderText("Search")
+        self.search_bar.setMinimumWidth(350)
+        self.search_bar.textChanged.connect(self.search)
+
+        self.search_display_widget = ScrollView()
+        self.search_display_widget.setLayout(QtWidgets.QGridLayout())
+
+        self.layout().addWidget(self.search_bar, alignment=QtCore.Qt.AlignRight)
         self.layout().addWidget(self.view)
+        self.layout().insertWidget(1, self.search_display_widget, alignment=QtCore.Qt.AlignTop)
 
         self.dirs = set()
         self.music_files = list()
         self.file_path = list()
 
+    def search(self, string):  # todo: complete search bar
+        widgets = self.view.widgets()
+
+        self.search_display_widget.show()
+        if not string:
+            for tile in widgets:
+                tile.show()
+                # self.search_display_widget.hide()
+            return
+
+        for tile in widgets:
+            if not tile.getTitle().startswith(string):
+                tile.hide()
+                # new_tile = MusicTile(tile.getMusic(), tile.getFile())
+                # self.search_display_widget.grid_layout.addWidget(new_tile)
+
     def pause(self):
-        print(self.view.currently_playing_tile)
         self.view.currently_playing_tile.pause()
 
     def playMusic(self):
-        print(self.view.currently_playing_tile)
         self.view.currently_playing_tile.playMusic()
 
     def addSearchDir(self, dir):
@@ -88,7 +113,7 @@ class MyMusic(QtWidgets.QWidget):
 class MusicScrollView(ScrollView):
 
     play = QtCore.pyqtSignal(object)  # path
-    addFavourite = QtCore.pyqtSignal(bool, str, QtGui.QPixmap)
+    addFavourite = QtCore.pyqtSignal(object)
     addToCollection = QtCore.pyqtSignal(bool)
 
     def __init__(self, *args):
@@ -98,10 +123,19 @@ class MusicScrollView(ScrollView):
     def currentlyPlaying(self):
         return self.currently_playing_tile
 
+    def widgets(self):
+        _widgets = set()
+        for x in range(self.grid_layout.count()):
+            widget = self.grid_layout.itemAt(x)
+            _widgets.add(widget.widget())
+
+        return _widgets
+
     def addTile(self, music: tinytag.TinyTag, file=""):
 
         tile = MusicTile(music, file, (250, 250))
         tile.playing.connect(lambda obj : self.play.emit(obj))
+        tile.addFavourite.connect(lambda obj: self.addFavourite.emit(obj))
 
         self.grid_layout.addWidget(tile, self._row, self._column)
 

@@ -17,8 +17,6 @@ class ScrollView(QtWidgets.QWidget):
 
         self.grid_layout.setSpacing(50)
 
-        self.row_width = 4
-
         self._row = 0
         self._column = 0
 

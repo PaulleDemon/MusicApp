@@ -13,6 +13,19 @@ class Notifier:
 
         self._current_playing_tile = None
         self._player = None
+        self._favourite_tab = None
+
+    def setFavouriteTab(self, fav):
+        self._favourite_tab = fav
+
+    def markFavourite(self, obj):
+        _, favourite, _ = obj.properties()
+        # print("Favourite: ", favourite)
+        if favourite:
+            self._favourite_tab.addTile(obj)
+
+        else:
+            self._favourite_tab.removeTile(obj)
 
     def loadObject(self, obj: MusicTile):
 
