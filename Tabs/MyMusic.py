@@ -134,7 +134,7 @@ class MusicScrollView(ScrollView):
     def addTile(self, music: tinytag.TinyTag, file=""):
 
         tile = MusicTile(music, file, (250, 250))
-        tile.playing.connect(lambda obj : self.play.emit(obj))
+        tile.playing.connect(lambda obj: self.play.emit(obj))
         tile.addFavourite.connect(lambda obj: self.addFavourite.emit(obj))
 
         self.grid_layout.addWidget(tile, self._row, self._column)

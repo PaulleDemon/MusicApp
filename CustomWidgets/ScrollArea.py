@@ -26,6 +26,18 @@ class ScrollView(QtWidgets.QWidget):
         super(ScrollView, self).enterEvent(a0)
         self.setFocus()
 
+    def getWidgets(self):
+        _widgets = list()
+
+        for x in range(self.grid_layout.count()):
+            _widgets.append(self.grid_layout.itemAt(x).widget())
+
+        return _widgets
+
+    def removeAll(self):
+        for x in self.getWidgets():
+            self.grid_layout.removeWidget(x)
+
     def deleteAll(self):
 
         self.widget.deleteLater()
@@ -34,3 +46,6 @@ class ScrollView(QtWidgets.QWidget):
         self.grid_layout = QtWidgets.QGridLayout(self.widget)
         self.grid_layout.setSpacing(50)
         self.scrollArea.setWidget(self.widget)
+
+        self._row=0
+        self._column=0

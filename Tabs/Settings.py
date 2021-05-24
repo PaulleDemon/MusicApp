@@ -56,9 +56,8 @@ class Settings(QtWidgets.QWidget):
         # self.notify.notify(MyMusic.MyMusic)
 
     def _path_deleted(self, dir):
-
         self.path_deleted.emit(dir)
-        print("Deleted Path: ", dir)
+
 
     def directories(self) -> set:
         paths = set()

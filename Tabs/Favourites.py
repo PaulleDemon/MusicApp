@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from CustomWidgets import ScrollArea
 
 
-
+# todo: remove favourite from Favorite view
 class Favourite(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
@@ -13,10 +13,8 @@ class Favourite(QtWidgets.QWidget):
         self.setLayout(QtWidgets.QVBoxLayout())
 
         self.view = FavouriteScrollView()
-        # self.view.play.connect(self.notifier.loadObject)
 
         self.layout().addWidget(self.view)
-        print(self.view)
 
     def addTile(self, obj):
         self.view.addTile(obj)
@@ -37,8 +35,10 @@ class FavouriteScrollView(ScrollArea.ScrollView):
     def addTile(self, obj: MusicTile):
 
         tile = FavouritesTile(obj, (250, 250))
-        self.grid_layout.addWidget(tile, self._row, self._column)
+        self.addWidget(tile)
 
+    def addWidget(self, widget):
+        self.grid_layout.addWidget(widget, self._row, self._column)
         if self._column == 3:
             self._row += 1
             self._column = 0
@@ -48,8 +48,19 @@ class FavouriteScrollView(ScrollArea.ScrollView):
 
     def removeWidget(self, obj):
 
-        child = obj.children()
+        child = obj.getChildren().copy()
+        print("Children: ", child)
         for x in child:
+            print(x.parent.getTitle())
             if isinstance(x, FavouritesTile):
-                self.grid_layout.removeWidget(obj)
+                self.grid_layout.removeWidget(x)
                 x.deleteLater()
+
+        widgets = self.getWidgets()
+        self.deleteAll()
+        print(widgets)
+        for widget in widgets:
+            self.addTile(widget.parent)
+            widget.parent.removeChild(widget)
+
+        self.grid_layout.update()

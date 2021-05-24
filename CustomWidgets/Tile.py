@@ -201,34 +201,39 @@ class MusicTile(Tile):
 
     def removeChild(self, child):
         try:
+            print("removing: ", child)
             self._children.remove(child)
         except KeyError:
             pass
 
-    def children(self):
+    def getChildren(self):
         return self._children
 
     def isPlaying(self):
         return self._playing
 
     def update_children(self):
-        print("Updating")
-        for item in self._children:
-            print(item)
-            if self.isPlaying():
-                print("PLaying")
-                item.update_play()
+        copied = self._children.copy()
+        for item in copied:
+            try:
+                if self.isPlaying():
+                    item.update_play()
 
-            else:
-                item.update_pause()
+                else:
+                    item.update_pause()
+
+            except RuntimeError as e:
+                print(e)
 
     def pause(self):
         self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
+        self.play_btn.setToolTip("Play")
         self._playing = False
         self.update_children()
 
     def play(self):
         self.play_btn.setIcon(QtGui.QIcon(Paths.PAUSE))
+        self.play_btn.setToolTip("Pause")
         self._playing = True
         self.update_children()
 
@@ -249,13 +254,13 @@ class MusicTile(Tile):
         elif obj_name == "favourite":
             self._favourite = not self._favourite
 
+            self.addFavourite.emit(self)
+
             if self._favourite:
                 self.favourite.setIcon(QtGui.QIcon(Paths.STAR_FILLED))
 
             else:
                 self.favourite.setIcon(QtGui.QIcon(Paths.STAR_UNFILLED))
-
-            self.addFavourite.emit(self)
 
 
 class FavouritesTile(Tile):
@@ -319,10 +324,12 @@ class FavouritesTile(Tile):
 
     def pause(self):
         self.update_pause()
+        self.play_btn.setToolTip("Play")
         self.parent.clicked(self.play_btn)
 
     def play(self):
         self.update_play()
+        self.play_btn.setToolTip("Pause")
         self.parent.clicked(self.play_btn)
 
     def clicked(self, btn):
@@ -333,3 +340,10 @@ class FavouritesTile(Tile):
 
             else:
                 self.play()
+
+        elif btn == self.favourite:
+            self.parent.clicked(btn)
+
+    def deleteLater(self) -> None:
+        self.parent.removeChild(self)
+        super(FavouritesTile, self).deleteLater()

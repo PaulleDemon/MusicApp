@@ -20,12 +20,13 @@ class Notifier:
 
     def markFavourite(self, obj):
         _, favourite, _ = obj.properties()
-        # print("Favourite: ", favourite)
+
         if favourite:
             self._favourite_tab.addTile(obj)
 
         else:
             self._favourite_tab.removeTile(obj)
+            print("Object: ", obj)
 
     def loadObject(self, obj: MusicTile):
 
