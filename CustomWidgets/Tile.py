@@ -201,7 +201,6 @@ class MusicTile(Tile):
 
     def removeChild(self, child):
         try:
-            print("removing: ", child)
             self._children.remove(child)
         except KeyError:
             pass

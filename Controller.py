@@ -28,7 +28,6 @@ class Notifier:
 
         else:
             self._favourite_tab.removeTile(obj)
-            print("Object: ", obj)
 
     def loadObject(self, obj: MusicTile):
 

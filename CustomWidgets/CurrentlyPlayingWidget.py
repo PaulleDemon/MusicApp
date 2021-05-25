@@ -1,6 +1,7 @@
 import Paths
-
 import PlayList
+
+from .Slider import Slider
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5 import QtMultimedia
 
@@ -36,8 +37,20 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self.next = QtWidgets.QPushButton(objectName="Next", clicked=self.nextSong)
         self.previous = QtWidgets.QPushButton(objectName="Previous", clicked=self.previousSong)
 
-        self.progress = QtWidgets.QProgressBar()
+        # self.progress = QtWidgets.QSlider(QtCore.Qt.Horizontal)
+        self.progress = Slider(QtCore.Qt.Horizontal)
+        self.progress.valueChanged.connect(self.setMusicPosition)
+        self.progress.clicked.connect(self.setMusicPosition)
+
+        self.progress_lbl = QtWidgets.QLabel()
+        self.progress_lbl.setWordWrap(True)
+
         self.player = QtMultimedia.QMediaPlayer()
+        # self.player.mediaStatusChanged.connect(self.mediaStatusChanged)
+        self.player.durationChanged.connect(self.setDuration)
+        self.player.positionChanged.connect(self.changeSliderPos)
+        self._duration = f"00:00:00"
+        self._formatted_duration = f"00:00:00"
 
         grid_layout.addWidget(self.thumb_nail, 0, 0, 1, 3)
         grid_layout.addWidget(self.title, 1, 0, 1, 3)
@@ -45,6 +58,9 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         grid_layout.addWidget(self.play_pause_btn, 2, 1, alignment=QtCore.Qt.AlignTop)
         grid_layout.addWidget(self.next, 2, 2, alignment=QtCore.Qt.AlignTop)
         grid_layout.addWidget(self.progress, 3, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
+        grid_layout.addWidget(self.progress_lbl, 4, 0, 1, 3, alignment=QtCore.Qt.AlignHCenter)
+
+        grid_layout.setRowStretch(6, 1)
 
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         super(CurrentlyPlaying, self).resizeEvent(event)
@@ -62,9 +78,35 @@ class CurrentlyPlaying(QtWidgets.QWidget):
     def load_file(self):
         url = QtCore.QUrl.fromLocalFile(self.current_file)
         self.content = QtMultimedia.QMediaContent(url)
-
         self.player.setMedia(self.content)
+        print(self.player.duration())
         self.play()
+
+    def changeSliderPos(self, value):
+        self.progress.blockSignals(True)
+        self.progress.setSliderPosition(value)
+        duration = QtCore.QDateTime.fromTime_t(value / 1000).toUTC().toString("hh:mm:ss")
+        self.progress_lbl.setText(f"{duration}/{self._formatted_duration}")
+        self.progress.blockSignals(False)
+
+    def setDuration(self, duration):
+        self._duration = duration
+
+        self._formatted_duration = QtCore.QDateTime.fromTime_t(duration/1000).toUTC().toString("hh:mm:ss")
+        # self.progress_lbl.setText(f"00:00:00/{self._formatted_duration}")
+        print("real duration: ", duration)
+        h, m, s = list(map(int, self._formatted_duration.split(':')))
+        max_range = h*3600 + m * 60 + s
+
+        self.progress.setRange(0, duration)
+        print(self._duration)
+        self.progress_lbl.setText(f"{max_range}")
+
+    def setMusicPosition(self, value):
+        print(value)
+        self.player.setPosition(value)
+        duration = QtCore.QDateTime.fromTime_t(value/1000).toUTC().toString("hh:mm:ss")
+        self.progress_lbl.setText(f"{duration}/{self._formatted_duration}")
 
     def play_pause(self):
         self._playing = not self._playing
@@ -88,13 +130,10 @@ class CurrentlyPlaying(QtWidgets.QWidget):
     def setPlaylistIndex(self, tile):
         current_index = self.play_list.getIndex(tile)
         self.play_list.setCurrentIndex(current_index)
-        print("Index: ", current_index)
 
     def nextSong(self):
 
         music_obj = self.play_list.next()
-        print("Index: ", self.play_list.current_index())
-
         if music_obj:
             self._setCurrentMusicObj(music_obj)
 
