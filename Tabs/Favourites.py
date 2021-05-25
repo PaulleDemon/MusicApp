@@ -4,7 +4,7 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from CustomWidgets import ScrollArea
 
 
-# todo: remove favourite from Favorite view
+
 class Favourite(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):

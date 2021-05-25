@@ -8,6 +8,8 @@ class Notifier:
 
     # play = QtCore.pyqtSignal(bool)
 
+    _current_playing_tile = None
+
     def __init__(self):
         self._playing = False
 
@@ -45,11 +47,24 @@ class Notifier:
         self._player.setThumbNail(obj.getThumbnail())
         self._player.setTitle(obj.getTitle())
         self._player.setCurrentPath(obj.getFile())
+        self._player.setPlaylistIndex(self._current_playing_tile)
         self._player.load_file()
+
+    def setCurrentTile(self, obj):
+        self._current_playing_tile.pause()
+        self._current_playing_tile = obj
+        self._playing = self._player.isPlaying()
+
+        if self._playing:
+            self.play()
+
+        else:
+            self.pause()
 
     def setPlayer(self, player: CustomWidgets.CurrentlyPlayingWidget.CurrentlyPlaying):
         self._player = player
         self._player.playing.connect(self._checkPlayerPlayPause)
+        self._player.current_tile_changed.connect(self.setCurrentTile)
 
     def _checkPlayerPlayPause(self, playing):
         if playing:

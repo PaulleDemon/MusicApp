@@ -1,6 +1,8 @@
 import os
 
 import tinytag
+
+import PlayList
 from PyQt5 import QtWidgets, QtCore, QtGui
 
 from CustomWidgets.Tile import MusicTile
@@ -40,6 +42,8 @@ class MyMusic(QtWidgets.QWidget):
         self.dirs = set()
         self.music_files = list()
         self.file_path = list()
+
+        self.playlist = PlayList.PlayList()
 
     def search(self, string):  # todo: complete search bar
         widgets = self.view.widgets()
@@ -96,6 +100,9 @@ class MyMusic(QtWidgets.QWidget):
         for music, file in zip(self.music_files, self.file_path):
             self.view.addTile(music, file)
 
+        for x in self.view.widgets():
+            self.playlist.add_to_playlist(x)
+
     def getFilePaths(self)-> list:
         return self.file_path
 
@@ -123,7 +130,7 @@ class MusicScrollView(ScrollView):
     def currentlyPlaying(self):
         return self.currently_playing_tile
 
-    def widgets(self):
+    def widgets(self):  # returns the tiles inside the QGridlayout
         _widgets = set()
         for x in range(self.grid_layout.count()):
             widget = self.grid_layout.itemAt(x)
@@ -131,7 +138,7 @@ class MusicScrollView(ScrollView):
 
         return _widgets
 
-    def addTile(self, music: tinytag.TinyTag, file=""):
+    def addTile(self, music: tinytag.TinyTag, file=""):  # adds a new tile
 
         tile = MusicTile(music, file, (250, 250))
         tile.playing.connect(lambda obj: self.play.emit(obj))

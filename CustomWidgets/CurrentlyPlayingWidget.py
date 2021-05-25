@@ -1,5 +1,6 @@
 import Paths
 
+import PlayList
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5 import QtMultimedia
 
@@ -10,6 +11,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
     current_tile = None
 
     playing = QtCore.pyqtSignal(bool)
+    current_tile_changed = QtCore.pyqtSignal(object)
 
     def __init__(self, *args, **kwargs):
         super(CurrentlyPlaying, self).__init__(*args, **kwargs)
@@ -29,12 +31,12 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self._pause()
 
         self._playing = False
+        self.play_list = PlayList.PlayList()
 
-        self.next = QtWidgets.QPushButton(objectName="Next")
-        self.previous = QtWidgets.QPushButton(objectName="Previous")
+        self.next = QtWidgets.QPushButton(objectName="Next", clicked=self.nextSong)
+        self.previous = QtWidgets.QPushButton(objectName="Previous", clicked=self.previousSong)
 
         self.progress = QtWidgets.QProgressBar()
-
         self.player = QtMultimedia.QMediaPlayer()
 
         grid_layout.addWidget(self.thumb_nail, 0, 0, 1, 3)
@@ -73,6 +75,41 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         else:
             self.pause()
 
+    def _setCurrentMusicObj(self, music_obj):
+
+        self.setCurrentPath(music_obj.getFile())
+        self.setThumbNail(music_obj.getThumbnail())
+        self.setTitle(music_obj.getTitle())
+
+        self.load_file()
+
+        self.current_tile_changed.emit(music_obj)
+
+    def setPlaylistIndex(self, tile):
+        current_index = self.play_list.getIndex(tile)
+        self.play_list.setCurrentIndex(current_index)
+        print("Index: ", current_index)
+
+    def nextSong(self):
+
+        music_obj = self.play_list.next()
+        print("Index: ", self.play_list.current_index())
+
+        if music_obj:
+            self._setCurrentMusicObj(music_obj)
+
+        else:
+            self.next.setEnabled(False)
+
+    def previousSong(self):
+        music_obj = self.play_list.previous()
+
+        if music_obj:
+            self._setCurrentMusicObj(music_obj)
+
+        else:
+            self.previous.setEnabled(False)
+
     def _play(self):
         self.play_pause_btn.setIcon(QtGui.QIcon(Paths.PAUSE))
         self.play_pause_btn.setToolTip("pause")
@@ -80,6 +117,9 @@ class CurrentlyPlaying(QtWidgets.QWidget):
     def _pause(self):
         self.play_pause_btn.setIcon(QtGui.QIcon(Paths.PLAY))
         self.play_pause_btn.setToolTip("playing")
+
+    def isPlaying(self):
+        return self._playing
 
     def play(self):
         self._play()

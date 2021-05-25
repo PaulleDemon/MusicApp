@@ -58,7 +58,6 @@ class Settings(QtWidgets.QWidget):
     def _path_deleted(self, dir):
         self.path_deleted.emit(dir)
 
-
     def directories(self) -> set:
         paths = set()
         for x in range(self.v_layout.count()-1):
