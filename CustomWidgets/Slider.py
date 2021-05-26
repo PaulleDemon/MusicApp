@@ -1,15 +1,23 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 
 class Slider(QtWidgets.QSlider):
     clicked = QtCore.pyqtSignal(float)
 
-    def mousePressEvent(self, event):
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         super(Slider, self).mousePressEvent(event)
+
         if event.button() == QtCore.Qt.LeftButton:
             val = self.pixelPosToRangeValue(event.pos())
-            # self.setValue(val)
-            self.clicked.emit(val)
+            self.setValue(val)
+
+    def mouseReleaseEvent(self, event: QtGui.QMouseEvent) -> None:
+            super(Slider, self).mouseReleaseEvent(event)
+
+            if event.button() == QtCore.Qt.LeftButton:
+                val = self.pixelPosToRangeValue(event.pos())
+                self.valueChanged.emit(val)
+
 
     def pixelPosToRangeValue(self, pos):
         opt = QtWidgets.QStyleOptionSlider()
