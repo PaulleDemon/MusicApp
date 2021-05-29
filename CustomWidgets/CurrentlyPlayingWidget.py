@@ -8,6 +8,7 @@ from PyQt5 import QtMultimedia
 
 # todo: disable slider and pause the song if the position is not seekable
 # todo: slider doesn't work good when
+# todo: if a music is not playable disable the play button
 class CurrentlyPlaying(QtWidgets.QWidget):
     current_file = ""
     current_tile = None
@@ -31,22 +32,31 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self.play_pause_btn = QtWidgets.QPushButton(objectName="PlayPause")
         self.play_pause_btn.clicked.connect(self.play_pause)
         self.play_pause_btn.setEnabled(False)
+        self.play_pause_btn.setFixedSize(50, 50)
         self._pause()
 
         self._playing = False
+        self._autoPlay = False
+        self._loop = False
+
         self.play_list = PlayList.PlayList()
 
-        self.next = QtWidgets.QPushButton(objectName="Next", clicked=self.nextSong)
-        self.previous = QtWidgets.QPushButton(objectName="Previous", clicked=self.previousSong)
+        self.loop_btn = QtWidgets.QPushButton("Loop")
+        self.loop_btn.setCheckable(True)
+        self.loop_btn.clicked.connect(self.loop)
+
+        self.next = CircularButton(Paths.NEXT_BTN0, Paths.NEXT_BTN1, objectName="Next", clicked=self.nextSong)
+        self.next.setFixedSize(50, 50)
+        self.previous = CircularButton(Paths.PREVIOUS_BTN0, Paths.PREVIOUS_BTN1,
+                                       objectName="Previous", clicked=self.previousSong)
+        self.previous.setFixedSize(50, 50)
 
         self.next.setEnabled(False)
         self.previous.setEnabled(False)
 
-        # self.progress = QtWidgets.QSlider(QtCore.Qt.Horizontal)
         self.progress = Slider(QtCore.Qt.Horizontal)
         self.progress.valueChanged.connect(self.setMusicPosition)
         self.progress.setEnabled(False)
-        # self.progress.clicked.connect(self.moveSliderToClicked)
 
         self.progress_lbl = QtWidgets.QLabel("No Music")
         self.progress_lbl.setWordWrap(True)
@@ -55,7 +65,8 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self._formatted_duration = f"00:00:00"
 
         self.player = QtMultimedia.QMediaPlayer()
-        # self.player.mediaStatusChanged.connect(self.mediaStatusChanged)
+        self.player.positionChanged.connect(self.changeSliderPos)
+        self.player.mediaStatusChanged.connect(self.mediaStatusChanged)
         self.player.durationChanged.connect(self.setDuration)
 
         self.volume_indicator = ButtonLabel()
@@ -70,20 +81,28 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
         grid_layout.addWidget(self.thumb_nail, 0, 0, 1, 3)
         grid_layout.addWidget(self.title, 1, 0, 1, 3)
-        grid_layout.addWidget(self.previous, 2, 0, alignment=QtCore.Qt.AlignTop)
-        grid_layout.addWidget(self.play_pause_btn, 2, 1, alignment=QtCore.Qt.AlignTop)
-        grid_layout.addWidget(self.next, 2, 2, alignment=QtCore.Qt.AlignTop)
-        grid_layout.addWidget(self.progress, 3, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
-        grid_layout.addWidget(self.progress_lbl, 4, 0, 1, 3, alignment=QtCore.Qt.AlignHCenter)
-        grid_layout.setRowStretch(5, 2)
-        grid_layout.addWidget(self.volume_slider, 6, 0, 1, 2, alignment=QtCore.Qt.AlignHCenter)
-        grid_layout.addWidget(self.volume_indicator, 6, 3, 1, 1, alignment=QtCore.Qt.AlignHCenter)
+        grid_layout.addWidget(self.loop_btn, 2, 0, 1, 3)
 
-        grid_layout.setRowStretch(7, 1)
+        grid_layout.addWidget(self.previous, 3, 0, alignment=QtCore.Qt.AlignTop)
+        grid_layout.addWidget(self.play_pause_btn, 3, 1, alignment=QtCore.Qt.AlignTop)
+        grid_layout.addWidget(self.next, 3, 2, alignment=QtCore.Qt.AlignTop)
+        grid_layout.addWidget(self.progress, 4, 0, 1, 3, alignment=QtCore.Qt.AlignTop)
+        grid_layout.addWidget(self.progress_lbl, 5, 0, 1, 3, alignment=QtCore.Qt.AlignHCenter)
+        grid_layout.setRowStretch(6, 2)
+        grid_layout.addWidget(self.volume_slider, 7, 0, 1, 2, alignment=QtCore.Qt.AlignHCenter)
+        grid_layout.addWidget(self.volume_indicator, 7, 3, 1, 1, alignment=QtCore.Qt.AlignHCenter)
+
+        grid_layout.setRowStretch(8, 1)
 
     def resizeEvent(self, event: QtGui.QResizeEvent) -> None:
         super(CurrentlyPlaying, self).resizeEvent(event)
         self.thumb_nail.setFixedHeight(self.thumb_nail.width())
+
+    def loop(self, enableloop):
+        self._loop = enableloop
+
+    def autoPlayNext(self, autoPlay: bool):
+        self._autoPlay = autoPlay
 
     def setThumbNail(self, image: QtGui.QPixmap):
         self.thumb_nail.setPixmap(image)
@@ -116,12 +135,12 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self.player.setMuted(not self.player.isMuted())
 
         if self.player.isMuted():
-            image_path = Paths.MUTED
+            self.volume_indicator.setPixmap(QtGui.QPixmap(Paths.MUTED))
 
         else:
-            image_path = Paths.VOLUME_LVL_1
+            self.setVolume(self.volume_slider.value())
 
-        self.volume_indicator.setPixmap(QtGui.QPixmap(image_path))
+
 
     def load_file(self):
         self.play_pause_btn.setEnabled(True)
@@ -132,16 +151,41 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         url = QtCore.QUrl.fromLocalFile(self.current_file)
         self.content = QtMultimedia.QMediaContent(url)
         self.player.setMedia(self.content)
-        self.player.positionChanged.connect(self.changeSliderPos)
-        # self.play()
+
+    def mediaStatusChanged(self, status):
+        print("Status: ", status)
+
+        if status in [QtMultimedia.QMediaPlayer.InvalidMedia, QtMultimedia.QMediaPlayer.LoadingMedia]:
+            self.progress_lbl.setText("Not Playable")
+            self.play_pause_btn.setEnabled(False)
+            self.progress.setEnabled(False)
+            self.pause()
+
+            if status == QtMultimedia.QMediaPlayer.InvalidMedia and self._autoPlay:
+                self.nextSong()
+                self.play()
+
+        elif status == QtMultimedia.QMediaPlayer.BufferedMedia:
+            self.play_pause_btn.setEnabled(True)
+            self.progress.setEnabled(True)
+            self.play()
+
+        if status == QtMultimedia.QMediaPlayer.EndOfMedia:
+            self.pause()
+            if self._loop:
+                self.setMusicPosition(0)
+                return
+
+            if self._autoPlay:
+                self.nextSong()
+                return
 
     def setProgressLabel(self, value):
-        print("Progress: ", self.sender(), value)
+
         duration = QtCore.QDateTime.fromTime_t(value / 1000).toUTC().toString("hh:mm:ss")
         self.progress_lbl.setText(f"{duration}/{self._formatted_duration}")
 
     def changeSliderPos(self, value):
-        # print("Value2: ", value)
 
         self.progress.blockSignals(True)
         self.progress.setSliderPosition(value)
@@ -166,25 +210,8 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self._duration = duration
 
         self._formatted_duration = QtCore.QDateTime.fromTime_t(duration / 1000).toUTC().toString("hh:mm:ss")
-        # self.progress_lbl.setText(f"00:00:00/{self._formatted_duration}")
-        print("real duration: ", duration)
-
-        h, m, s = list(map(int, self._formatted_duration.split(':')))
-        max_range = h * 3600 + m * 60 + s
-
-        self.progress.setEnabled(True)
-
-        if not self.player.isSeekable() or self._duration == 0:
-            QtCore.QTimer.singleShot(5, lambda: self.progress_lbl.setText("Not Playable"))
-            self.progress.setEnabled(False)
-            self.player.positionChanged.disconnect(self.changeSliderPos)
-            self.pause()
-            print("Not Playable")
-            return
-
-        self.play()
+        # self.play()
         self.progress.setRange(0, duration)
-        print("duration: ", self._duration)
         self.setProgressLabel(duration)
 
     def play_pause(self):
@@ -256,8 +283,28 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
 class ButtonLabel(QtWidgets.QLabel):
     clicked = QtCore.pyqtSignal()
-    
+
     def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:
         super(ButtonLabel, self).mousePressEvent(event)
         if event.button() == QtCore.Qt.LeftButton:
             self.clicked.emit()
+
+
+class CircularButton(QtWidgets.QPushButton):
+
+    def __init__(self, default_image: QtGui.QPixmap, hover_image: QtGui.QPixmap, *args, **kwargs):
+        super(CircularButton, self).__init__(*args, **kwargs)
+        self._default_image = QtGui.QIcon(default_image)
+        self._hover_image = QtGui.QIcon(hover_image)
+        self.setIcon(self._default_image)
+        self.setIconSize(QtCore.QSize(30, 30))
+
+    def enterEvent(self, a0: QtCore.QEvent) -> None:
+        if self.isEnabled():
+            self.setIcon(self._hover_image)
+
+        super(CircularButton, self).enterEvent(a0)
+
+    def leaveEvent(self, a0: QtCore.QEvent) -> None:
+        self.setIcon(self._default_image)
+        super(CircularButton, self).leaveEvent(a0)

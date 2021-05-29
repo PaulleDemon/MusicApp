@@ -5,11 +5,14 @@ import tinytag
 import PlayList
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from CustomWidgets.Tile import MusicTile
+from Tiles.CustomTile import MusicTile
 from CustomWidgets.ScrollArea import ScrollView
+from CustomWidgets.SearchScrollView import SearchScrollView
+
 from tinytag import TinyTag
 
 
+# todo: auto focus is taking away focus from the searchBar
 class MyMusic(QtWidgets.QWidget):
 
     play = QtCore.pyqtSignal(bool, str, QtGui.QPixmap)  # path
@@ -23,21 +26,29 @@ class MyMusic(QtWidgets.QWidget):
 
         self.setLayout(QtWidgets.QVBoxLayout())
 
+        self.stack_view = QtWidgets.QStackedWidget()
+
         self.view = MusicScrollView()
         self.view.play.connect(self.notifier.loadObject)
         self.view.addFavourite.connect(self.notifier.markFavourite)
 
         self.search_bar = QtWidgets.QLineEdit()
+        self.search_bar.setClearButtonEnabled(True)
         self.search_bar.setPlaceholderText("Search")
         self.search_bar.setMinimumWidth(350)
         self.search_bar.textChanged.connect(self.search)
 
-        self.search_display_widget = ScrollView()
-        self.search_display_widget.setLayout(QtWidgets.QGridLayout())
+
+        self.search_display_widget = SearchScrollView()
+        # self.search_display_widget.setLayout(QtWidgets.QGridLayout())
+
+        self.stack_view.addWidget(self.view)
+        self.stack_view.addWidget(self.search_display_widget)
+
+        self.stack_view.setCurrentIndex(0)
 
         self.layout().addWidget(self.search_bar, alignment=QtCore.Qt.AlignRight)
-        self.layout().addWidget(self.view)
-        self.layout().insertWidget(1, self.search_display_widget, alignment=QtCore.Qt.AlignTop)
+        self.layout().addWidget(self.stack_view)
 
         self.dirs = set()
         self.music_files = list()
@@ -46,20 +57,22 @@ class MyMusic(QtWidgets.QWidget):
         self.playlist = PlayList.PlayList()
 
     def search(self, string):  # todo: complete search bar
-        widgets = self.view.widgets()
 
-        self.search_display_widget.show()
         if not string:
-            for tile in widgets:
-                tile.show()
-                # self.search_display_widget.hide()
+            self.stack_view.setCurrentIndex(0)
             return
 
+        if self.stack_view.currentIndex() == 0:
+            self.stack_view.setCurrentIndex(1)
+
+        widgets = self.view.widgets()
+
+        self.search_display_widget.removeTileParent()
+        self.search_display_widget.deleteAll()
+        print("REMOVED AND RELOADED")
         for tile in widgets:
-            if not tile.getTitle().startswith(string):
-                tile.hide()
-                # new_tile = MusicTile(tile.getMusic(), tile.getFile())
-                # self.search_display_widget.grid_layout.addWidget(new_tile)
+            if tile.getTitle().lower().startswith(string.lower()):
+                self.search_display_widget.addTile(tile)
 
     def pause(self):
         self.view.currently_playing_tile.pause()

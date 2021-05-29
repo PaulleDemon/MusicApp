@@ -1,17 +1,15 @@
-
-from Tiles.CustomTile import MusicTile, FavouritesTile
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 from CustomWidgets import ScrollArea
+from Tiles.CollectionTile import CollectionTile
 
-
-class Favourite(QtWidgets.QWidget):
+class MyCollection(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
-        super(Favourite, self).__init__(*args, **kwargs)
+        super(MyCollection, self).__init__(*args, **kwargs)
 
         self.setLayout(QtWidgets.QVBoxLayout())
 
-        self.view = FavouriteScrollView()
+        self.view = CollectionScrollView()
 
         self.layout().addWidget(self.view)
 
@@ -22,18 +20,18 @@ class Favourite(QtWidgets.QWidget):
         self.view.removeWidget(obj)
 
 
-class FavouriteScrollView(ScrollArea.ScrollView):
+class CollectionScrollView(ScrollArea.ScrollView):
 
     play = QtCore.pyqtSignal(bool, str, QtGui.QPixmap)  # path
     addFavourite = QtCore.pyqtSignal(bool, str, QtGui.QPixmap)
     addToCollection = QtCore.pyqtSignal(bool)
 
     def __init__(self, *args):
-        super(FavouriteScrollView, self).__init__(*args)
+        super(CollectionScrollView, self).__init__(*args)
 
-    def addTile(self, obj: MusicTile):
+    def addTile(self, obj: CollectionTile):
 
-        tile = FavouritesTile(obj, (250, 250))
+        tile = CollectionTile(obj, (250, 250))
         self.addWidget(tile)
 
     def addWidget(self, widget):
@@ -48,10 +46,10 @@ class FavouriteScrollView(ScrollArea.ScrollView):
     def removeWidget(self, obj):
 
         child = obj.getChildren().copy()
-        print("Children: ", [x.parent.getTitle() for x in child])
+        print("Children: ", child)
         for x in child:
             print(x.parent.getTitle())
-            if isinstance(x, FavouritesTile):
+            if isinstance(x, CollectionTile):
                 self.grid_layout.removeWidget(x)
                 x.deleteLater()
 

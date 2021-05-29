@@ -6,18 +6,20 @@ import threading
 class DbQueries:
 
     create_path_table = "CREATE TABLE IF NOT EXISTS path(serial_no INTEGER PRIMARY KEY AUTOINCREMENT," \
-                        " path VARCHAR(200))"
-    create_file_table = "CREATE TABLE IF NOT EXISTS file(serial_no INTEGER PRIMARY KEY, file VARCHAR(100), " \
-                        "currentlyplaying BIT, favourite BIT, collection varchar(30))"
+                        " path VARCHAR(200));"
+    create_file_table = "CREATE TABLE IF NOT EXISTS file(serial_no INTEGER PRIMARY KEY, file VARCHAR(100)," \
+                        " currentlyplaying  BOOLEAN NOT NULL CHECK (currentlyplaying IN (0, 1))," \
+                        "'delete' BOOLEAN NOT NULL CHECK ('delete' IN (0, 1)), collection VARCHAR(30));"
 
-    insert_path = "INSERT INTO path(path) VALUES(?)"
-    insert_file = "INSERT INTO file(file, currentlyplaying, favourite, collection) VALUES(?, ?, ?, ?)"
+    insert_path = "INSERT INTO path(path) VALUES(?);"
+    insert_file = "INSERT INTO file(file, currentlyplaying, delete, collection) VALUES(?, ?, ?, ?);"
 
-    delete_all_paths = "DELETE FROM path"
-    delete_all_files = "DELETE FROM file"
+    delete_all_paths = "DELETE FROM path;"
+    delete_all_files = "DELETE FROM file;"
 
-    display_all_paths = "SELECT * FROM path"
-    display_all_files = "SELECT * FROM file"
+    display_all_paths = "SELECT * FROM path;"
+    display_all_files = "SELECT * FROM file;"
+
 
 class DBHandler:
 

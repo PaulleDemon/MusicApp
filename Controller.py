@@ -1,7 +1,5 @@
-from PyQt5 import QtCore
-
 import CustomWidgets.CurrentlyPlayingWidget
-from CustomWidgets.Tile import MusicTile
+from Tiles.CustomTile import MusicTile
 
 
 class Notifier:
@@ -28,6 +26,9 @@ class Notifier:
 
         else:
             self._favourite_tab.removeTile(obj)
+
+    def enableAutoPlay(self, enable=False):
+        self._player.autoPlayNext(enable)
 
     def loadObject(self, obj: MusicTile):
 

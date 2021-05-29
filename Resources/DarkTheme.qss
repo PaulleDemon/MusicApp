@@ -79,3 +79,25 @@ QSlider::add-page:horizontal {
 QSlider::sub-page:horizontal {
     background: yellow;
 }
+
+#CurrentlyPlaying>QPushButton{
+    border-radius: 25;
+
+}
+/*
+QPushButton#Next{
+    image: url("Resources/Icons/Next-btnDark.png");
+}
+
+QPushButton#Next:hover{
+    image: url("Resources/Icons/Next-btnLight.png");
+}
+
+QPushButton#Previous{
+    image: url("Resources/Icons/Previous-btnDark.png");
+}
+
+QPushButton#Previous:hover{
+    image: url("Resources/Icons/Previous-btnLight.png");
+}
+*/

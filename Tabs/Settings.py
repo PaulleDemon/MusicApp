@@ -10,6 +10,8 @@ class Settings(QtWidgets.QWidget):
     path_added = QtCore.pyqtSignal(set)
     path_deleted = QtCore.pyqtSignal(str)
 
+    autoPlayChecked = QtCore.pyqtSignal(bool)
+
     def __init__(self, *args, **kwargs):
         super(Settings, self).__init__(*args, **kwargs)
 
@@ -29,9 +31,13 @@ class Settings(QtWidgets.QWidget):
         self.add_btn = QtWidgets.QPushButton("Add Path")
         self.add_btn.clicked.connect(self.addRow)
 
+        self.auto_play_check_btn = QtWidgets.QCheckBox("Auto play")
+        self.auto_play_check_btn.clicked.connect(self.autoPlay)
+
         self.layout().addWidget(self.header)
         self.layout().addWidget(self.scroll_area)
         self.layout().addWidget(self.add_btn)
+        self.layout().addWidget(self.auto_play_check_btn)
 
         self.notify = Notifier()
 
@@ -50,10 +56,11 @@ class Settings(QtWidgets.QWidget):
                                      lambda: self.scroll_area.verticalScrollBar().setValue(
                                          self.scroll_area.verticalScrollBar().maximum()))
 
-    def _path_added(self):
+    def autoPlay(self, checked):
+        self.autoPlayChecked.emit(checked)
 
+    def _path_added(self):
         self.path_added.emit(self.directories())
-        # self.notify.notify(MyMusic.MyMusic)
 
     def _path_deleted(self, dir):
         self.path_deleted.emit(dir)

@@ -2,10 +2,10 @@ from PyQt5 import QtWidgets, QtGui
 
 import Controller
 import DB_Operations
-from CustomWidgets.CurrentlyPlayingWidget import CurrentlyPlaying
+
 from CustomWidgets.VerticalTabs import TabWidget
 from CustomWidgets.ScrollArea import ScrollView
-from Tabs import Settings, MyMusic, Favourites
+from Tabs import Settings, MyMusic, Favourites, MyCollections
 
 
 class MainWindow(QtWidgets.QWidget):
@@ -27,7 +27,7 @@ class MainWindow(QtWidgets.QWidget):
 
         self.myMusic = MyMusic.MyMusic(self.notifier)
         self.favourites = Favourites.Favourite()
-        self.musicCollections = ScrollView()
+        self.musicCollections = MyCollections.MyCollection()
         self.settings = Settings.Settings()
         self.statistics = ScrollView()
 
@@ -35,6 +35,7 @@ class MainWindow(QtWidgets.QWidget):
         self.notifier.setFavouriteTab(self.favourites)
 
         self.settings.path_added.connect(self.myMusic.notify)
+        self.settings.autoPlayChecked.connect(self.notifier.enableAutoPlay)
         self.settings.path_deleted.connect(lambda x: self.myMusic.deleteSearchDir(x))
 
         self.tabWidget.addTab(self.myMusic, "My Music")

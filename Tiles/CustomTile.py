@@ -3,74 +3,9 @@ import Paths
 
 from io import BytesIO
 from PyQt5 import QtWidgets, QtGui, QtCore
+from .Tile import Tile
 from PIL import Image
 from tinytag import TinyTag
-
-
-class Tile(QtWidgets.QWidget):
-
-    def __init__(self, size: tuple = (100, 100),*args, **kwargs):
-        super(Tile, self).__init__(*args, **kwargs)
-
-        self.setObjectName("Tile")
-
-        self._original_size = QtCore.QSize(*size)
-        self.setMinimumSize(self._original_size)
-        self.setMaximumSize(self._original_size.width()+50, self._original_size.height()+50)
-
-        self.animation = QtCore.QPropertyAnimation(self, b"geometry")
-        self.animation.setDuration(150)
-
-    def play(self):
-        raise NotImplementedError("Must implement play")
-
-    def pause(self):
-        raise NotImplementedError("Must implement pause")
-
-    def animate(self, expand):
-        if expand:
-            self.animation.setDirection(self.animation.Forward)
-        else:
-            self.animation.setDirection(self.animation.Backward)
-        self.animation.start()
-
-    def enterEvent(self, a0: QtCore.QEvent) -> None:
-        super(Tile, self).enterEvent(a0)
-        self.animate(True)
-
-        try:
-            self.btns.show()
-            self.blur_effect.setEnabled(True)
-
-        except:
-            raise NotImplementedError("self.btns but be a variable in hild class")
-
-    def leaveEvent(self, a0: QtCore.QEvent) -> None:
-        super(Tile, self).leaveEvent(a0)
-        self.animate(False)
-        self.btns.hide()
-        self.blur_effect.setEnabled(False)
-
-    def updateAnimation(self):
-        if not self.animation.state():
-            center = self.geometry().center()
-            start = QtCore.QRect(QtCore.QPoint(), self.minimumSize())
-            start.moveCenter(center)
-            self.animation.setStartValue(start)
-            end = QtCore.QRect(QtCore.QPoint(), self.maximumSize())
-            end.moveCenter(center)
-            self.animation.setEndValue(end)
-
-    def moveEvent(self, event):
-        self.updateAnimation()
-
-    def resizeEvent(self, event):
-        self.updateAnimation()
-        if not self.animation.state():
-            rect = QtCore.QRect(QtCore.QPoint(),
-                                self.maximumSize() if self.underMouse() else self.minimumSize())
-            rect.moveCenter(self.geometry().center())
-            self.setGeometry(rect)
 
 
 class MusicTile(Tile):
@@ -145,7 +80,7 @@ class MusicTile(Tile):
         self.play_btn.setToolTip("Play")
         self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
 
-        self.favourite = QtWidgets.QPushButton(objectName="favourite")
+        self.favourite = QtWidgets.QPushButton(objectName="Favourite")
         self.favourite.setToolTip("Mark Favourite")
         self.favourite.setIcon(QtGui.QIcon(Paths.STAR_UNFILLED))
 
@@ -198,12 +133,16 @@ class MusicTile(Tile):
 
     def addChild(self, child):
         self._children.add(child)
+        print("Children added: ", self._children)
 
     def removeChild(self, child):
         try:
             self._children.remove(child)
         except KeyError:
+            print("KEY ERROR")
             pass
+
+        print("CHILDREN NOW: ", self._children)
 
     def getChildren(self):
         return self._children
@@ -221,8 +160,16 @@ class MusicTile(Tile):
                 else:
                     item.update_pause()
 
+                try:
+                    item.checkFavourite()
+
+                except NameError:
+                    raise NotImplementedError("'Check Favourite' must be implemented")
+
             except RuntimeError as e:
-                print(e)
+                print("Here is my error: ", e)
+                # self.removeChild(item)  # todo: only SearchTile is causing such problems make sure it does't and remove this
+
 
     def pause(self):
         self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
@@ -238,6 +185,8 @@ class MusicTile(Tile):
 
     def clicked(self, btn: QtWidgets.QPushButton=None):
         obj_name = btn.objectName()
+
+        print("FAVUrite")
         if obj_name == "PlayButton":
             self._playing = not self._playing
 
@@ -250,16 +199,19 @@ class MusicTile(Tile):
             self.playing.emit(self)
             self.update_children()
 
-        elif obj_name == "favourite":
+        elif obj_name == "Favourite":
             self._favourite = not self._favourite
 
             self.addFavourite.emit(self)
+            print("FAVOURIAE: ", self._favourite)
 
             if self._favourite:
                 self.favourite.setIcon(QtGui.QIcon(Paths.STAR_FILLED))
 
             else:
                 self.favourite.setIcon(QtGui.QIcon(Paths.STAR_UNFILLED))
+
+            self.update_children()
 
 
 class FavouritesTile(Tile):
@@ -282,7 +234,7 @@ class FavouritesTile(Tile):
         self.play_btn = QtWidgets.QPushButton(objectName="PlayButton")
         self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
 
-        self.favourite = QtWidgets.QPushButton(objectName="favourite")
+        self.favourite = QtWidgets.QPushButton(objectName="Favourite")
         self.favourite.setToolTip("remove from favourite")
         self.favourite.setIcon(QtGui.QIcon(Paths.STAR_FILLED))
 
@@ -346,3 +298,7 @@ class FavouritesTile(Tile):
     def deleteLater(self) -> None:
         self.parent.removeChild(self)
         super(FavouritesTile, self).deleteLater()
+
+    def checkFavourite(self):
+        pass
+
