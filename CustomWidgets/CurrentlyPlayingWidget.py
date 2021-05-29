@@ -6,9 +6,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5 import QtMultimedia
 
 
-# todo: disable slider and pause the song if the position is not seekable
-# todo: slider doesn't work good when
-# todo: if a music is not playable disable the play button
+
 class CurrentlyPlaying(QtWidgets.QWidget):
     current_file = ""
     current_tile = None
@@ -193,14 +191,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
         self.setProgressLabel(value)
 
-    def moveSliderToClicked(self, value):  # todo: remove this as there is no use
-        self.progress.setSliderPosition(value)
-        self.player.setPosition(value)
-        self.setProgressLabel(value)
-
     def setMusicPosition(self, value):
-        # print(value)
-
         self.player.setPosition(value)
         self.player.play()
 

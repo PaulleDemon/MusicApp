@@ -17,7 +17,6 @@ class SearchScrollView(ScrollView):
         self.addWidget(tile)
 
     def addWidget(self, widget):
-        print("Adding: ")
         self.grid_layout.addWidget(widget, self._row, self._column)
         if self._column == 3:
             self._row += 1
@@ -27,12 +26,8 @@ class SearchScrollView(ScrollView):
             self._column += 1
 
     def removeTileParent(self):
-        print("Starting removing....", self.grid_layout.count())
-        print(self.getWidgets())
         for x in range(self.grid_layout.count()):
-            searchTile = self.grid_layout.itemAt(x)
+            searchTile = self.grid_layout.itemAt(x).widget()
+            searchTile.deleteLater()
 
-            if searchTile:
-                tile = searchTile.widget()
-                tile.deleteLater()
 

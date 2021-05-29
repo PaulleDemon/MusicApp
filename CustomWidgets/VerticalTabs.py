@@ -4,7 +4,6 @@ from CustomWidgets.CurrentlyPlayingWidget import CurrentlyPlaying
 
 class TabWidget(QtWidgets.QWidget):
 
-
     def __init__(self, width=250, *args, **kwargs):
         super(TabWidget, self).__init__(*args, **kwargs)
 
@@ -43,7 +42,9 @@ class TabWidget(QtWidgets.QWidget):
 
     def enterEvent(self, a0: QtCore.QEvent):
         super(TabWidget, self).enterEvent(a0)
-        self.setFocus()
+
+        if not isinstance( QtWidgets.QApplication.focusWidget(), QtWidgets.QLineEdit):
+            self.setFocus()
 
     def showTab(self, btn):
 

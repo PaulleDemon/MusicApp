@@ -38,9 +38,7 @@ class MyMusic(QtWidgets.QWidget):
         self.search_bar.setMinimumWidth(350)
         self.search_bar.textChanged.connect(self.search)
 
-
         self.search_display_widget = SearchScrollView()
-        # self.search_display_widget.setLayout(QtWidgets.QGridLayout())
 
         self.stack_view.addWidget(self.view)
         self.stack_view.addWidget(self.search_display_widget)
@@ -56,7 +54,7 @@ class MyMusic(QtWidgets.QWidget):
 
         self.playlist = PlayList.PlayList()
 
-    def search(self, string):  # todo: complete search bar
+    def search(self, string):
 
         if not string:
             self.stack_view.setCurrentIndex(0)
@@ -69,7 +67,6 @@ class MyMusic(QtWidgets.QWidget):
 
         self.search_display_widget.removeTileParent()
         self.search_display_widget.deleteAll()
-        print("REMOVED AND RELOADED")
         for tile in widgets:
             if tile.getTitle().lower().startswith(string.lower()):
                 self.search_display_widget.addTile(tile)

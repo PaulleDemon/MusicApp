@@ -128,14 +128,3 @@ class CollectionInnerTile(Tile):
     def deleteLater(self) -> None:
         self.parent.removeChild(self)
         super(CollectionInnerTile, self).deleteLater()
-
-
-# if __name__ == "__main__":
-#     app = QtWidgets.QApplication(sys.argv)
-#
-#     widget = QtWidgets.QWidget()
-#     widget.setLayout(QtWidgets.QVBoxLayout())
-#     widget.layout().addWidget(CollectionTile("Simple"))
-#     widget.show()
-#
-#     sys.exit(app.exec_())

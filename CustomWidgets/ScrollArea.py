@@ -24,7 +24,9 @@ class ScrollView(QtWidgets.QWidget):
 
     def enterEvent(self, a0) -> None:
         super(ScrollView, self).enterEvent(a0)
-        self.setFocus()
+
+        if not isinstance( QtWidgets.QApplication.focusWidget(), QtWidgets.QLineEdit):
+            self.setFocus()
 
     def getWidgets(self):
         _widgets = list()

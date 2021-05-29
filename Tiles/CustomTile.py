@@ -9,8 +9,7 @@ from tinytag import TinyTag
 
 
 class MusicTile(Tile):
-
-    playing = QtCore.pyqtSignal(object) # path
+    playing = QtCore.pyqtSignal(object)  # path
     addFavourite = QtCore.pyqtSignal(object)
     addToCollection = QtCore.pyqtSignal(bool)
 
@@ -133,16 +132,12 @@ class MusicTile(Tile):
 
     def addChild(self, child):
         self._children.add(child)
-        print("Children added: ", self._children)
 
     def removeChild(self, child):
         try:
             self._children.remove(child)
         except KeyError:
-            print("KEY ERROR")
             pass
-
-        print("CHILDREN NOW: ", self._children)
 
     def getChildren(self):
         return self._children
@@ -167,9 +162,7 @@ class MusicTile(Tile):
                     raise NotImplementedError("'Check Favourite' must be implemented")
 
             except RuntimeError as e:
-                print("Here is my error: ", e)
-                # self.removeChild(item)  # todo: only SearchTile is causing such problems make sure it does't and remove this
-
+                print(e)
 
     def pause(self):
         self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
@@ -183,10 +176,9 @@ class MusicTile(Tile):
         self._playing = True
         self.update_children()
 
-    def clicked(self, btn: QtWidgets.QPushButton=None):
+    def clicked(self, btn: QtWidgets.QPushButton = None):
         obj_name = btn.objectName()
 
-        print("FAVUrite")
         if obj_name == "PlayButton":
             self._playing = not self._playing
 
@@ -194,7 +186,7 @@ class MusicTile(Tile):
                 self.play()
 
             else:
-               self.pause()
+                self.pause()
 
             self.playing.emit(self)
             self.update_children()
@@ -203,7 +195,6 @@ class MusicTile(Tile):
             self._favourite = not self._favourite
 
             self.addFavourite.emit(self)
-            print("FAVOURIAE: ", self._favourite)
 
             if self._favourite:
                 self.favourite.setIcon(QtGui.QIcon(Paths.STAR_FILLED))
@@ -301,4 +292,3 @@ class FavouritesTile(Tile):
 
     def checkFavourite(self):
         pass
-

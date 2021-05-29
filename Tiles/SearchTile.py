@@ -4,7 +4,6 @@ from .Tile import Tile
 from .CustomTile import MusicTile
 
 
-# todo: remove child form parent
 class SearchTile(Tile):
 
     def __init__(self, parent: MusicTile, *args, **kwargs):
