@@ -5,14 +5,13 @@ import tinytag
 import PlayList
 from PyQt5 import QtWidgets, QtCore, QtGui
 
-from Tiles.CustomTile import MusicTile
+from Tiles.Music_FavouritesTile import MusicTile
 from CustomWidgets.ScrollArea import ScrollView
 from CustomWidgets.SearchScrollView import SearchScrollView
 
 from tinytag import TinyTag
 
 
-# todo: auto focus is taking away focus from the searchBar
 class MyMusic(QtWidgets.QWidget):
 
     play = QtCore.pyqtSignal(bool, str, QtGui.QPixmap)  # path
@@ -31,6 +30,7 @@ class MyMusic(QtWidgets.QWidget):
         self.view = MusicScrollView()
         self.view.play.connect(self.notifier.loadObject)
         self.view.addFavourite.connect(self.notifier.markFavourite)
+        self.view.addToCollection.connect(self.notifier.addToCollection)
 
         self.search_bar = QtWidgets.QLineEdit()
         self.search_bar.setClearButtonEnabled(True)
@@ -131,7 +131,7 @@ class MusicScrollView(ScrollView):
 
     play = QtCore.pyqtSignal(object)  # path
     addFavourite = QtCore.pyqtSignal(object)
-    addToCollection = QtCore.pyqtSignal(bool)
+    addToCollection = QtCore.pyqtSignal(object)
 
     def __init__(self, *args):
         super(MusicScrollView, self).__init__(*args)
@@ -153,6 +153,7 @@ class MusicScrollView(ScrollView):
         tile = MusicTile(music, file, (250, 250))
         tile.playing.connect(lambda obj: self.play.emit(obj))
         tile.addFavourite.connect(lambda obj: self.addFavourite.emit(obj))
+        tile.addToCollection.connect(lambda obj: self.addToCollection.emit(obj))
 
         self.grid_layout.addWidget(tile, self._row, self._column)
 

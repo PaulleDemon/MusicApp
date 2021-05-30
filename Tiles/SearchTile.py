@@ -1,7 +1,7 @@
 import Paths
 from PyQt5 import QtWidgets, QtGui, QtCore
 from .Tile import Tile
-from .CustomTile import MusicTile
+from .Music_FavouritesTile import MusicTile
 
 
 class SearchTile(Tile):
@@ -36,6 +36,7 @@ class SearchTile(Tile):
 
         self.btns = QtWidgets.QWidget()
         self.btns.setLayout(QtWidgets.QHBoxLayout())
+        self.btns.hide()
 
         self.btns.layout().addWidget(self.favourite, alignment=QtCore.Qt.AlignBottom)
         self.btns.layout().addWidget(self.play_btn, alignment=QtCore.Qt.AlignBottom)

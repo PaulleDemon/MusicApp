@@ -2,7 +2,8 @@
 FOLDER = r"Resources/Icons/Folder.png"
 UNKNOWN_MUSIC = r"Resources/Icons/Music.png"
 
-COLLECTION = r"Resources/Icons/Collections.png"
+COLLECTION = r"Resources/Icons/Collections-white.png"
+COLLECTION_GRAY = r"Resources/Icons/Collections.png"
 
 PLAY = r"Resources/Icons/PlayButton.png"
 PAUSE = r"Resources/Icons/pause.png"
@@ -22,3 +23,5 @@ NEXT_BTN1 = r"Resources/Icons/Next-btnLight.png"
 
 PREVIOUS_BTN0 = r"Resources/Icons/Previous-btnDark.png"
 PREVIOUS_BTN1 = r"Resources/Icons/Previous-btnLight.png"
+
+DELETE_BIN = r"Resources/Icons/Trash-gray.png"

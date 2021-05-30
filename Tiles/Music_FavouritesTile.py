@@ -11,7 +11,7 @@ from tinytag import TinyTag
 class MusicTile(Tile):
     playing = QtCore.pyqtSignal(object)  # path
     addFavourite = QtCore.pyqtSignal(object)
-    addToCollection = QtCore.pyqtSignal(bool)
+    addToCollection = QtCore.pyqtSignal(object)
 
     def __init__(self, music: TinyTag, file_path="", *args, **kwargs):
         super(MusicTile, self).__init__(*args, **kwargs)
@@ -204,6 +204,17 @@ class MusicTile(Tile):
 
             self.update_children()
 
+        elif obj_name == "Collection":
+
+            self._collection = not self._collection
+            self.addToCollection.emit(self)
+
+            if self._collection:
+                self.collection.setIcon(QtGui.QIcon(Paths.COLLECTION_GRAY))
+
+            else:
+                self.collection.setIcon(QtGui.QIcon(Paths.COLLECTION))
+
 
 class FavouritesTile(Tile):
 
@@ -238,6 +249,7 @@ class FavouritesTile(Tile):
 
         self.btns = QtWidgets.QWidget()
         self.btns.setLayout(QtWidgets.QHBoxLayout())
+        self.btns.hide()
 
         self.btns.layout().addWidget(self.favourite, alignment=QtCore.Qt.AlignBottom)
         self.btns.layout().addWidget(self.play_btn, alignment=QtCore.Qt.AlignBottom)

@@ -1,6 +1,7 @@
-from PyQt5 import QtWidgets, QtGui, QtCore
+from PyQt5 import QtWidgets
 from CustomWidgets import ScrollArea
 from Tiles.CollectionTile import CollectionTile
+
 
 class MyCollection(QtWidgets.QWidget):
 
@@ -8,30 +9,32 @@ class MyCollection(QtWidgets.QWidget):
         super(MyCollection, self).__init__(*args, **kwargs)
 
         self.setLayout(QtWidgets.QVBoxLayout())
-
         self.view = CollectionScrollView()
 
         self.layout().addWidget(self.view)
 
-    def addTile(self, obj):
-        self.view.addTile(obj)
+    def addTile(self, obj, collection_name):
+        # self.view.addTile(obj, collection_name)
+        print("NAme1: ", collection_name, obj)
+        self.view.addTile(collection_name)
 
     def removeTile(self, obj):
         self.view.removeWidget(obj)
 
+    def getCollections(self):
+        wid = self.view.getWidgets()
+        print("Widgets: ", wid)
+        return [x.getCollectionName() for x in wid]
+
 
 class CollectionScrollView(ScrollArea.ScrollView):
-
-    play = QtCore.pyqtSignal(bool, str, QtGui.QPixmap)  # path
-    addFavourite = QtCore.pyqtSignal(bool, str, QtGui.QPixmap)
-    addToCollection = QtCore.pyqtSignal(bool)
 
     def __init__(self, *args):
         super(CollectionScrollView, self).__init__(*args)
 
-    def addTile(self, obj: CollectionTile):
-
-        tile = CollectionTile(obj, (250, 250))
+    def addTile(self, name: str):
+        print("Collection Name: ", name)
+        tile = CollectionTile(name, (250, 250))
         self.addWidget(tile)
 
     def addWidget(self, widget):

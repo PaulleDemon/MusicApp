@@ -33,6 +33,7 @@ class MainWindow(QtWidgets.QWidget):
 
         self.notifier.setPlayer(self.tabWidget.player_object())
         self.notifier.setFavouriteTab(self.favourites)
+        self.notifier.setCollectionTab(self.musicCollections)
 
         self.settings.path_added.connect(self.myMusic.notify)
         self.settings.autoPlayChecked.connect(self.notifier.enableAutoPlay)

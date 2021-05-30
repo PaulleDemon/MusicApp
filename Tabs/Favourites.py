@@ -1,5 +1,5 @@
 
-from Tiles.CustomTile import MusicTile, FavouritesTile
+from Tiles.Music_FavouritesTile import MusicTile, FavouritesTile
 from PyQt5 import QtWidgets, QtCore, QtGui
 from CustomWidgets import ScrollArea
 
