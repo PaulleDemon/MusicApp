@@ -11,7 +11,7 @@ from tinytag import TinyTag
 class MusicTile(Tile):
     playing = QtCore.pyqtSignal(object)  # path
     addFavourite = QtCore.pyqtSignal(object)
-    addToCollection = QtCore.pyqtSignal(object)
+    addToCollection = QtCore.pyqtSignal(object, bool)
 
     def __init__(self, music: TinyTag, file_path="", *args, **kwargs):
         super(MusicTile, self).__init__(*args, **kwargs)
@@ -69,7 +69,7 @@ class MusicTile(Tile):
         self.btns = QtWidgets.QWidget()
         self.btns.setLayout(QtWidgets.QHBoxLayout())
 
-        btns = QtWidgets.QButtonGroup(self)
+        btn_grp = QtWidgets.QButtonGroup(self)
 
         self._playing = False
         self._favourite = False
@@ -87,10 +87,10 @@ class MusicTile(Tile):
         self.collection.setToolTip("Add to Collection")
         self.collection.setIcon(QtGui.QIcon(Paths.COLLECTION))
 
-        btns.addButton(self.play_btn)
-        btns.addButton(self.favourite)
-        btns.addButton(self.collection)
-        btns.buttonClicked.connect(self.clicked)
+        btn_grp.addButton(self.play_btn)
+        btn_grp.addButton(self.favourite)
+        btn_grp.addButton(self.collection)
+        btn_grp.buttonClicked.connect(self.clicked)
 
         self.btns.layout().addWidget(self.collection, alignment=QtCore.Qt.AlignBottom)
         self.btns.layout().addWidget(self.favourite, alignment=QtCore.Qt.AlignBottom)
@@ -114,6 +114,7 @@ class MusicTile(Tile):
         self.layout().addWidget(self.music_title)
 
         self._children = set()
+        self._collection_name = None
 
     def getMusic(self) -> TinyTag:
         return self.music
@@ -126,6 +127,12 @@ class MusicTile(Tile):
 
     def getTitle(self):
         return self.music_title.text()
+
+    def getCollectionName(self):
+        return self._collection_name
+
+    def setCollectionName(self, name):
+        self._collection_name = name
 
     def properties(self):
         return [self._playing, self._favourite, self._collection]
@@ -158,7 +165,7 @@ class MusicTile(Tile):
                 try:
                     item.checkFavourite()
 
-                except NameError:
+                except (NameError, AttributeError):
                     raise NotImplementedError("'Check Favourite' must be implemented")
 
             except RuntimeError as e:
@@ -207,13 +214,15 @@ class MusicTile(Tile):
         elif obj_name == "Collection":
 
             self._collection = not self._collection
-            self.addToCollection.emit(self)
-
+            self.addToCollection.emit(self, self._collection)
+            print("COLLECTIOON: ", self._collection)
             if self._collection:
                 self.collection.setIcon(QtGui.QIcon(Paths.COLLECTION_GRAY))
 
             else:
                 self.collection.setIcon(QtGui.QIcon(Paths.COLLECTION))
+                self._collection_name = None
+
 
 
 class FavouritesTile(Tile):

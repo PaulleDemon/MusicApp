@@ -37,7 +37,8 @@ class Tile(QtWidgets.QWidget):
             self.blur_effect.setEnabled(True)
 
         except:
-            raise NotImplementedError(f"btns must be an instance variable in child class: {self.__class__}")
+            raise NotImplementedError(f"btns and blur_effect must be an instance"
+                                      f" variable in child class: {self.__class__}")
 
     def leaveEvent(self, a0: QtCore.QEvent) -> None:
         super(Tile, self).leaveEvent(a0)

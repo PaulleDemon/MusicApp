@@ -14,17 +14,13 @@ class MyCollection(QtWidgets.QWidget):
         self.layout().addWidget(self.view)
 
     def addTile(self, obj, collection_name):
-        # self.view.addTile(obj, collection_name)
-        print("NAme1: ", collection_name, obj)
-        self.view.addTile(collection_name)
+        self.view.addCollectionTile(obj, collection_name)
 
-    def removeTile(self, obj):
-        self.view.removeWidget(obj)
+    def removeTile(self, obj, collection_name):
+        self.view.removeInnerCollectionTile(obj, collection_name)
 
     def getCollections(self):
-        wid = self.view.getWidgets()
-        print("Widgets: ", wid)
-        return [x.getCollectionName() for x in wid]
+        return self.view.getCollectionNames()
 
 
 class CollectionScrollView(ScrollArea.ScrollView):
@@ -32,10 +28,22 @@ class CollectionScrollView(ScrollArea.ScrollView):
     def __init__(self, *args):
         super(CollectionScrollView, self).__init__(*args)
 
-    def addTile(self, name: str):
-        print("Collection Name: ", name)
-        tile = CollectionTile(name, (250, 250))
-        self.addWidget(tile)
+    def addCollectionTile(self, obj, name: str):
+        if name not in self.getCollectionNames():
+            tile = CollectionTile(name, (250, 250))
+            self.addWidget(tile)
+
+        collection_tile = self.getWidgetByName(name)
+        collection_tile.addToCollection(obj)
+
+    def removeInnerCollectionTile(self, obj, collection_name):
+        collection_tile = self.getWidgetByName(collection_name)
+        collection_tile.removeFromCollection(obj)
+
+    def getWidgetByName(self, name):
+        for x in self.getWidgets():
+            if x.getCollectionName() == name:
+                return x
 
     def addWidget(self, widget):
         self.grid_layout.addWidget(widget, self._row, self._column)
@@ -46,21 +54,25 @@ class CollectionScrollView(ScrollArea.ScrollView):
         else:
             self._column += 1
 
-    def removeWidget(self, obj):
+    def getCollectionNames(self):
+        wid = self.getWidgets()
+        return [x.getCollectionName() for x in wid]
+
+    def removeCollectionTile(self, obj):
 
         child = obj.getChildren().copy()
         print("Children: ", child)
         for x in child:
             print(x.parent.getTitle())
             if isinstance(x, CollectionTile):
-                self.grid_layout.removeWidget(x)
+                self.grid_layout.removeCollectionTile(x)
                 x.deleteLater()
 
         widgets = self.getWidgets()
         self.deleteAll()
-        print(widgets)
+
         for widget in widgets:
-            self.addTile(widget.parent)
+            self.addCollectionTile(widget.parent)
             widget.parent.removeChild(widget)
 
         self.grid_layout.update()

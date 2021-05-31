@@ -52,7 +52,7 @@ class FavouriteScrollView(ScrollArea.ScrollView):
         for x in child:
             print(x.parent.getTitle())
             if isinstance(x, FavouritesTile):
-                self.grid_layout.removeWidget(x)
+                self.grid_layout.removeCollectionTile(x)
                 x.deleteLater()
 
         widgets = self.getWidgets()

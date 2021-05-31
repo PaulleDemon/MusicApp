@@ -24,6 +24,7 @@ class Notifier:
         _, favourite, _ = obj.properties()
 
         if favourite:
+            # self._favourite_tab.addCollectionTile(obj)
             self._favourite_tab.addTile(obj)
 
         else:
@@ -98,16 +99,20 @@ class Notifier:
     def setCollectionTab(self, tab):
         self._collection_tab = tab
 
-    def addToCollection(self, obj):
-        print(obj)
+    def addToCollection(self, obj, addToCollection=True):
+        print("ADD TO COLLECTION: ", addToCollection)
+        if not addToCollection:
+            self._collection_tab.removeTile(obj, obj.getCollectionName())
+            return
+
         new_dialog = CollectionDialog()
         new_dialog.addItems(self._collection_tab.getCollections())
         new_dialog.collection_edit.setFocus()
         if new_dialog.exec_():
             collection_name = new_dialog.getCollectionName()
             print(collection_name)
-            print(self._collection_tab)
             self._collection_tab.addTile(obj, collection_name)
+            obj.setCollectionName(collection_name)
 
 
 class CollectionDialog(QtWidgets.QDialog):

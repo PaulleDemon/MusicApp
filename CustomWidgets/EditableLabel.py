@@ -4,7 +4,8 @@ from PyQt5 import QtWidgets, QtCore
 class EditableLabel(QtWidgets.QWidget):
     textChanged = QtCore.pyqtSignal(str)
 
-    def __init__(self, text="", placeHolder="class name", defaultText:str="", *args, **kwargs):
+    def __init__(self, text="", placeHolder="class name", defaultText: str = "", alignment=QtCore.Qt.AlignLeft,
+                 *args, **kwargs):
         super(EditableLabel, self).__init__(*args, **kwargs)
 
         self._text = text
@@ -17,7 +18,7 @@ class EditableLabel(QtWidgets.QWidget):
         self.vlayout = QtWidgets.QVBoxLayout()
         self.vlayout.setContentsMargins(0, 0, 0, 0)
 
-        self._label = QtWidgets.QLabel(text)
+        self._label = QtWidgets.QLabel(text, alignment=alignment)
         self._label.setSizePolicy(QtWidgets.QSizePolicy.MinimumExpanding, QtWidgets.QSizePolicy.Minimum)
 
         self._edit_label = QtWidgets.QLineEdit()
@@ -66,4 +67,3 @@ class EditableLabel(QtWidgets.QWidget):
 
     def getText(self):
         return self._text
-

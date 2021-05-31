@@ -1,5 +1,7 @@
 import Paths
 from PyQt5 import QtWidgets, QtCore, QtGui
+
+import PlayList
 from Tiles.Tile import Tile
 from CustomWidgets.EditableLabel import EditableLabel
 from CustomWidgets.ScrollArea import ScrollView
@@ -9,6 +11,8 @@ class CollectionTile(Tile):
 
     def __init__(self, collection_name, *args, **kwargs):
         super(CollectionTile, self).__init__(*args, **kwargs)
+
+        self.setStyleSheet('background-color: red;')
 
         self._collection_name = collection_name
 
@@ -27,21 +31,25 @@ class CollectionTile(Tile):
         self.btns.setLayout(QtWidgets.QHBoxLayout())
         self.btns.hide()
 
-        delete_collection_btn = QtWidgets.QPushButton("Delete Collection")
-        play_btn = QtWidgets.QPushButton("play")
-        collection_label = EditableLabel(collection_name)
+        self.blur_effect = QtWidgets.QGraphicsBlurEffect()
+        self.blur_effect.setBlurRadius(2)
+
+        delete_collection_btn = QtWidgets.QPushButton("Collection", clicked=self.deleteLater)
+        play_btn = QtWidgets.QPushButton("play", clicked=self.playCollection)
+
+        collection_label = EditableLabel(collection_name, alignment=QtCore.Qt.AlignCenter)
         collection_label.textChanged.connect(self.setCollectionName)
 
         self.btns.layout().addWidget(delete_collection_btn)
         self.btns.layout().addWidget(play_btn)
 
-
         widget.layout().addWidget(self.btns)
-        # widget.layout().addWidget(play_btn, 0, 1)
         widget.layout().addWidget(collection_label)
 
         self.layout().addWidget(self.thumb_nail)
         self.layout().addWidget(widget)
+
+        self._play_list = PlayList.PlayList()
 
         self._collection_children = set()
 
@@ -51,20 +59,34 @@ class CollectionTile(Tile):
     def setCollectionName(self, collection_name):
         self._collection_name = collection_name
 
-    def addToCollection(self, innerTile):
-        self._collection_children.add(innerTile)
+    def addToCollection(self, obj):  # provide a music object
+
+        self._collection_children.add(obj)
+        self._play_list.add_to_playlist(obj)
         self.reload()
 
-    def removeFromCollection(self, innerTile):
-        self._collection_children.remove(innerTile)
+    def removeFromCollection(self, obj):
+
+        widgets = self.scroll_view.getWidgets()
+        for x in widgets:
+            if x.musicObj == obj:
+                x.deleteLater()
+                break
+
+        self._collection_children.remove(obj)
+        self._play_list.remove_from_playlist(obj)
         self.reload()
 
     def reload(self):
+
+        self.scroll_view.children()
+
         self.scroll_view.removeTileParent()
         self.scroll_view.deleteAll()
 
-        for tile in self._collection_children:
-            self.scroll_view.addWidget(tile)
+        for obj in self._collection_children:
+            collection_inner_tile = CollectionInnerTile(obj)
+            self.scroll_view.addWidget(collection_inner_tile)
 
     def pause(self):
         pass
@@ -74,9 +96,20 @@ class CollectionTile(Tile):
 
     def mousePressEvent(self, a0: QtGui.QMouseEvent) -> None:
         self.scroll_view.show()
+        super(CollectionTile, self).mousePressEvent(a0)
 
     def getCollectionName(self):
         return self._collection_name
+
+    def playCollection(self):
+        pass
+
+    def deleteLater(self) -> None:
+
+        for x in self._collection_children:
+            x.clicked(self.sender())
+
+        super(CollectionTile, self).deleteLater()
 
 
 class CollectionInnerTile(Tile):
@@ -101,8 +134,8 @@ class CollectionInnerTile(Tile):
         self.play_btn = QtWidgets.QPushButton(objectName="PlayButton")
         self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
 
-        self.delete_btn = QtWidgets.QPushButton(objectName="Delete")
-        self.delete_btn.setToolTip("remove from delete")
+        self.delete_btn = QtWidgets.QPushButton(objectName="Collection")
+        self.delete_btn.setToolTip("remove from Collection")
         self.delete_btn.setIcon(QtGui.QIcon(Paths.DELETE_BIN))  # todo: add a delete icon
 
         if self.parent.isPlaying():
@@ -165,6 +198,12 @@ class CollectionInnerTile(Tile):
     def deleteLater(self) -> None:
         self.parent.removeChild(self)
         super(CollectionInnerTile, self).deleteLater()
+
+    def checkFavourite(self):  # necessary just use this
+        pass
+
+    def musicObj(self):
+        return self.parent
 
 
 class CollectionTileScrollView(ScrollView):

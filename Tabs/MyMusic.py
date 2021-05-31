@@ -14,9 +14,9 @@ from tinytag import TinyTag
 
 class MyMusic(QtWidgets.QWidget):
 
-    play = QtCore.pyqtSignal(bool, str, QtGui.QPixmap)  # path
-    addFavourite = QtCore.pyqtSignal(bool)
-    addToCollection = QtCore.pyqtSignal(bool)
+    # play = QtCore.pyqtSignal(bool, str, QtGui.QPixmap)  # path
+    # addFavourite = QtCore.pyqtSignal(bool)
+    # addToCollection = QtCore.pyqtSignal(bool)
 
     def __init__(self, notifier, *args, **kwargs):
         super(MyMusic, self).__init__(*args, **kwargs)
@@ -131,7 +131,7 @@ class MusicScrollView(ScrollView):
 
     play = QtCore.pyqtSignal(object)  # path
     addFavourite = QtCore.pyqtSignal(object)
-    addToCollection = QtCore.pyqtSignal(object)
+    addToCollection = QtCore.pyqtSignal(object, bool)
 
     def __init__(self, *args):
         super(MusicScrollView, self).__init__(*args)
@@ -153,7 +153,7 @@ class MusicScrollView(ScrollView):
         tile = MusicTile(music, file, (250, 250))
         tile.playing.connect(lambda obj: self.play.emit(obj))
         tile.addFavourite.connect(lambda obj: self.addFavourite.emit(obj))
-        tile.addToCollection.connect(lambda obj: self.addToCollection.emit(obj))
+        tile.addToCollection.connect(lambda obj, add: self.addToCollection.emit(obj, add))
 
         self.grid_layout.addWidget(tile, self._row, self._column)
 
