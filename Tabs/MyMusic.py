@@ -3,7 +3,7 @@ import os
 import tinytag
 
 import PlayList
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 
 from Tiles.Music_FavouritesTile import MusicTile
 from CustomWidgets.ScrollArea import ScrollView
@@ -13,10 +13,6 @@ from tinytag import TinyTag
 
 
 class MyMusic(QtWidgets.QWidget):
-
-    # play = QtCore.pyqtSignal(bool, str, QtGui.QPixmap)  # path
-    # addFavourite = QtCore.pyqtSignal(bool)
-    # addToCollection = QtCore.pyqtSignal(bool)
 
     def __init__(self, notifier, *args, **kwargs):
         super(MyMusic, self).__init__(*args, **kwargs)

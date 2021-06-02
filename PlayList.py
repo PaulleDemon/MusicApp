@@ -10,6 +10,10 @@ class PlayList:
 
     def add_to_playlist(self, music_obj):
         self._playList.append(music_obj)
+        print("YES")
+
+    def clear(self):
+        self._playList = []
 
     def remove_from_playlist(self, music_obj):
         self._playList.remove(music_obj)

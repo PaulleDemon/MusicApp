@@ -100,7 +100,7 @@ class Notifier:
         self._collection_tab = tab
 
     def addToCollection(self, obj, addToCollection=True):
-        print("ADD TO COLLECTION: ", addToCollection)
+
         if not addToCollection:
             self._collection_tab.removeTile(obj, obj.getCollectionName())
             return
@@ -110,9 +110,11 @@ class Notifier:
         new_dialog.collection_edit.setFocus()
         if new_dialog.exec_():
             collection_name = new_dialog.getCollectionName()
-            print(collection_name)
             self._collection_tab.addTile(obj, collection_name)
             obj.setCollectionName(collection_name)
+
+        else:
+            obj._collection = False
 
 
 class CollectionDialog(QtWidgets.QDialog):

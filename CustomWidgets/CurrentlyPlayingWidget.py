@@ -6,7 +6,6 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5 import QtMultimedia
 
 
-
 class CurrentlyPlaying(QtWidgets.QWidget):
     current_file = ""
     current_tile = None
@@ -33,6 +32,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self.play_pause_btn.setFixedSize(50, 50)
         self._pause()
 
+        self._media_ended = False
         self._playing = False
         self._autoPlay = False
         self._loop = False
@@ -138,8 +138,6 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         else:
             self.setVolume(self.volume_slider.value())
 
-
-
     def load_file(self):
         self.play_pause_btn.setEnabled(True)
         self.next.setEnabled(True)
@@ -150,33 +148,39 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self.content = QtMultimedia.QMediaContent(url)
         self.player.setMedia(self.content)
 
+        self._media_ended = False
+
     def mediaStatusChanged(self, status):
         print("Status: ", status)
 
-        if status in [QtMultimedia.QMediaPlayer.InvalidMedia, QtMultimedia.QMediaPlayer.LoadingMedia]:
+        if status in [QtMultimedia.QMediaPlayer.InvalidMedia, QtMultimedia.QMediaPlayer.LoadingMedia,
+                      QtMultimedia.QMediaPlayer.NoMedia]:
             self.progress_lbl.setText("Not Playable")
             self.play_pause_btn.setEnabled(False)
             self.progress.setEnabled(False)
             self.pause()
 
-            if status == QtMultimedia.QMediaPlayer.InvalidMedia and self._autoPlay:
+            if self._autoPlay:
                 self.nextSong()
-                self.play()
 
-        elif status == QtMultimedia.QMediaPlayer.BufferedMedia:
+        elif status == QtMultimedia.QMediaPlayer.BufferedMedia and not self._media_ended:
             self.play_pause_btn.setEnabled(True)
             self.progress.setEnabled(True)
             self.play()
 
         if status == QtMultimedia.QMediaPlayer.EndOfMedia:
             self.pause()
+            print("LOOP: ", self._loop)
             if self._loop:
                 self.setMusicPosition(0)
+                self._play()
                 return
 
             if self._autoPlay:
                 self.nextSong()
                 return
+
+            self._media_ended = True
 
     def setProgressLabel(self, value):
 
@@ -193,7 +197,9 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
     def setMusicPosition(self, value):
         self.player.setPosition(value)
-        self.player.play()
+
+        if self._playing:
+            self.player.play()
 
         self.setProgressLabel(value)
 
@@ -201,7 +207,6 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self._duration = duration
 
         self._formatted_duration = QtCore.QDateTime.fromTime_t(duration / 1000).toUTC().toString("hh:mm:ss")
-        # self.play()
         self.progress.setRange(0, duration)
         self.setProgressLabel(duration)
 
@@ -219,7 +224,6 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self.setCurrentPath(music_obj.getFile())
         self.setThumbNail(music_obj.getThumbnail())
         self.setTitle(music_obj.getTitle())
-
         self.load_file()
 
         self.current_tile_changed.emit(music_obj)
@@ -237,6 +241,8 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         else:
             self.next.setEnabled(False)
 
+        self.play()
+
     def previousSong(self):
         music_obj = self.play_list.previous()
 
@@ -245,6 +251,8 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
         else:
             self.previous.setEnabled(False)
+
+        self.play()
 
     def _play(self):
         self.play_pause_btn.setIcon(QtGui.QIcon(Paths.PAUSE))
@@ -269,6 +277,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
         self.player.pause()
         self._playing = False
+        print("PLAYING: ", self._playing)
         self.playing.emit(self._playing)
 
 
