@@ -1,10 +1,11 @@
+from PlayList import PlayList
 import CustomWidgets.CurrentlyPlayingWidget
 from Tiles.Music_FavouritesTile import MusicTile
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets, QtCore, QtGui
 
 
-# todo: add to collection feature
+# todo: Collection playlist not disabling the last music next button
 class Notifier:
 
     _current_playing_tile = None
@@ -12,46 +13,33 @@ class Notifier:
     def __init__(self):
         self._playing = False
 
+        self._play_list = PlayList()
         self._current_playing_tile = None
         self._player = None
+        self._music_tab = None
         self._favourite_tab = None
         self._collection_tab = None
-
-    def setFavouriteTab(self, fav):
-        self._favourite_tab = fav
-
-    def markFavourite(self, obj):
-        _, favourite, _ = obj.properties()
-
-        if favourite:
-            # self._favourite_tab.addCollectionTile(obj)
-            self._favourite_tab.addTile(obj)
-
-        else:
-            self._favourite_tab.removeTile(obj)
 
     def enableAutoPlay(self, enable=False):
         self._player.autoPlayNext(enable)
 
-    def loadObject(self, obj: MusicTile):
+    def setMusicTab(self, tab):
+        self._music_tab = tab
+        self._music_tab.play.connect(self.loadMusicPlayList)
+        self._music_tab.addFavourite.connect(self.markFavourite)
+        self._music_tab.addToCollection.connect(self.addToCollection)
 
-        if self._current_playing_tile == obj:
-            self.play_pause()
-            return
+    def setFavouriteTab(self, fav):
+        self._favourite_tab = fav
 
-        if self._current_playing_tile:
-            try:
-                self._current_playing_tile.pause()
+    def setCollectionTab(self, tab):
+        self._collection_tab = tab
+        self._collection_tab.playing.connect(self.loadCollectionPlayList)
 
-            except NameError:
-                raise NotImplementedError("Pause must be implemented")
-
-        self._current_playing_tile = obj
-        self._player.setThumbNail(obj.getThumbnail())
-        self._player.setTitle(obj.getTitle())
-        self._player.setCurrentPath(obj.getFile())
-        self._player.setPlaylistIndex(self._current_playing_tile)
-        self._player.load_file()
+    def setPlayer(self, player: CustomWidgets.CurrentlyPlayingWidget.CurrentlyPlaying):
+        self._player = player
+        self._player.playing.connect(self._checkPlayerPlayPause)
+        self._player.current_tile_changed.connect(self.setCurrentTile)
 
     def setCurrentTile(self, obj):
         self._current_playing_tile.pause()
@@ -64,10 +52,58 @@ class Notifier:
         else:
             self.pause()
 
-    def setPlayer(self, player: CustomWidgets.CurrentlyPlayingWidget.CurrentlyPlaying):
-        self._player = player
-        self._player.playing.connect(self._checkPlayerPlayPause)
-        self._player.current_tile_changed.connect(self.setCurrentTile)
+    def markFavourite(self, obj):
+        _, favourite, _ = obj.properties()
+
+        if favourite:
+            self._favourite_tab.addTile(obj)
+
+        else:
+            self._favourite_tab.removeTile(obj)
+
+    def loadCurrentTile(self, obj):
+        self._current_playing_tile = obj
+        self._player.setThumbNail(obj.getThumbnail())
+        self._player.setTitle(obj.getTitle())
+        self._player.setCurrentPath(obj.getFile())
+        self._player.setPlaylistIndex(self._current_playing_tile)
+        self._player.load_file()
+
+    def loadMusicPlayList(self, obj: MusicTile):
+
+        if self._current_playing_tile == obj:
+            self.play_pause()
+            return
+
+        if self._current_playing_tile:
+            try:
+                self._current_playing_tile.pause()
+
+            except NameError:
+                raise NotImplementedError("Pause must be implemented")
+
+        self._play_list.clear()
+        self._play_list.set_playlist(self._music_tab.playlist())
+        self.loadCurrentTile(obj)
+
+    def loadCollectionPlayList(self, collection):
+
+        print("LOADING....")
+        if self._current_playing_tile == collection:
+            self.play_pause()
+            return
+
+        if self._current_playing_tile:
+            try:
+                self._current_playing_tile.pause()
+
+            except NameError:
+                raise NotImplementedError("Pause must be implemented")
+
+        self._play_list.clear()
+        self._play_list.set_playlist(self._collection_tab.playlist())
+        print("PLAYLIST: ", self._play_list.playList())
+        self.loadCurrentTile(self._play_list.playList()[0])
 
     def _checkPlayerPlayPause(self, playing):
         if playing:
@@ -95,9 +131,6 @@ class Notifier:
         else:
             self.pause()
             self._player.pause()
-
-    def setCollectionTab(self, tab):
-        self._collection_tab = tab
 
     def addToCollection(self, obj, addToCollection=True):
 
@@ -137,7 +170,8 @@ class CollectionDialog(QtWidgets.QDialog):
         self.err_lbl.hide()
 
         self.collection_list_view = QtWidgets.QListWidget()
-        self.collection_list_view.itemDoubleClicked.connect(self.itemSelected)
+        # self.collection_list_view.itemDoubleClicked.connect(self.itemSelected)
+        self.collection_list_view.itemActivated.connect(self.itemSelected)
 
         self.layout().addWidget(self.collection_edit)
         self.layout().addWidget(self.err_lbl)

@@ -234,25 +234,25 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
     def nextSong(self):
 
-        music_obj = self.play_list.next()
-        if music_obj:
+        music_obj, last = self.play_list.next()
+        print("Next Song: ", music_obj)
+        if music_obj is not None:
             self._setCurrentMusicObj(music_obj)
+            self.play()
 
-        else:
+        if last:
             self.next.setEnabled(False)
 
-        self.play()
-
     def previousSong(self):
-        music_obj = self.play_list.previous()
+        music_obj, first = self.play_list.previous()
 
-        if music_obj:
+        if music_obj is not None:
             self._setCurrentMusicObj(music_obj)
+            self.play()
 
-        else:
+        if first:
             self.previous.setEnabled(False)
 
-        self.play()
 
     def _play(self):
         self.play_pause_btn.setIcon(QtGui.QIcon(Paths.PAUSE))

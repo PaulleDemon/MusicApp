@@ -1,15 +1,20 @@
-from PyQt5 import QtWidgets
+from PyQt5 import QtWidgets, QtCore
 from CustomWidgets import ScrollArea
 from Tiles.CollectionTile import CollectionTile
 
 
 class MyCollection(QtWidgets.QWidget):
 
+    playing = QtCore.pyqtSignal(object)
+
     def __init__(self, *args, **kwargs):
         super(MyCollection, self).__init__(*args, **kwargs)
 
+        self._current_playing_collection = None
+
         self.setLayout(QtWidgets.QVBoxLayout())
         self.view = CollectionScrollView()
+        self.view.playing.connect(self.setCurrentPlayingCollection)
 
         self.layout().addWidget(self.view)
 
@@ -22,8 +27,17 @@ class MyCollection(QtWidgets.QWidget):
     def getCollections(self):
         return self.view.getCollectionNames()
 
+    def setCurrentPlayingCollection(self, obj):
+        self._current_playing_collection = obj
+        self.playing.emit(self._current_playing_collection)
+
+    def playlist(self):
+        return self._current_playing_collection.playlist()
+
 
 class CollectionScrollView(ScrollArea.ScrollView):
+
+    playing = QtCore.pyqtSignal(object)
 
     def __init__(self, *args):
         super(CollectionScrollView, self).__init__(*args)
@@ -31,6 +45,7 @@ class CollectionScrollView(ScrollArea.ScrollView):
     def addCollectionTile(self, obj, name: str):
         if name not in self.getCollectionNames():
             tile = CollectionTile(name, (250, 250))
+            tile.playing.connect(self.playing.emit)
             self.addWidget(tile)
 
         collection_tile = self.getWidgetByName(name)
@@ -61,9 +76,8 @@ class CollectionScrollView(ScrollArea.ScrollView):
     def removeCollectionTile(self, obj):
 
         child = obj.getChildren().copy()
-        print("Children: ", child)
+
         for x in child:
-            print(x.parent.getTitle())
             if isinstance(x, CollectionTile):
                 self.grid_layout.removeCollectionTile(x)
                 x.deleteLater()

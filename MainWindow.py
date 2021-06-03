@@ -13,6 +13,8 @@ class MainWindow(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
 
+        self.showMaximized()
+
         with open(r"Resources/DarkTheme.qss") as file:
             self.setStyleSheet(file.read())
 
@@ -25,13 +27,14 @@ class MainWindow(QtWidgets.QWidget):
 
         self.tabWidget = TabWidget()
 
-        self.myMusic = MyMusic.MyMusic(self.notifier)
+        self.myMusic = MyMusic.MyMusic()
         self.favourites = Favourites.Favourite()
         self.musicCollections = MyCollections.MyCollection()
         self.settings = Settings.Settings()
         self.statistics = ScrollView()
 
         self.notifier.setPlayer(self.tabWidget.player_object())
+        self.notifier.setMusicTab(self.myMusic)
         self.notifier.setFavouriteTab(self.favourites)
         self.notifier.setCollectionTab(self.musicCollections)
 
