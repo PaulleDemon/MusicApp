@@ -11,11 +11,9 @@ class PlayList:
 
     def add_to_playlist(self, music_obj):
         PlayList._playList.append(music_obj)
-        print("YES")
 
     def clear(self):
         PlayList._playList = []
-        # self._current = 0
 
     def remove_from_playlist(self, music_obj):
         PlayList._playList.remove(music_obj)

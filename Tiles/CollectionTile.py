@@ -7,7 +7,7 @@ from CustomWidgets.ScrollArea import ScrollView
 
 
 # todo: add scrolling thumbnail
-# todo: update the next button when a new objetc is added to collection.
+
 class CollectionTile(Tile):
 
     playing = QtCore.pyqtSignal(object)

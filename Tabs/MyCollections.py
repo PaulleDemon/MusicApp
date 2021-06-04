@@ -34,7 +34,7 @@ class MyCollection(QtWidgets.QWidget):
 
         self.stack_view.setCurrentIndex(0)
 
-        self.layout().addWidget(self.search_bar)
+        self.layout().addWidget(self.search_bar, alignment=QtCore.Qt.AlignRight)
         self.layout().addWidget(self.stack_view)
 
     def addTile(self, obj, collection_name):

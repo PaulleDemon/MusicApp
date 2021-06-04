@@ -2,10 +2,9 @@ from PlayList import PlayList
 import CustomWidgets.CurrentlyPlayingWidget
 from Tiles.Music_FavouritesTile import MusicTile
 
-from PyQt5 import QtWidgets, QtCore, QtGui
+from PyQt5 import QtWidgets, QtCore
 
 
-# todo: Collection playlist not disabling the last music next button
 class Notifier:
 
     _current_playing_tile = None
@@ -58,7 +57,7 @@ class Notifier:
         _, favourite, _ = obj.properties()
 
         if favourite:
-            self._favourite_tab.addMusicTile(obj)
+            self._favourite_tab.addTile(obj)
 
         else:
             self._favourite_tab.removeTile(obj)
@@ -105,18 +104,16 @@ class Notifier:
 
         self._play_list.clear()
         self._play_list.set_playlist(self._collection_tab.playlist())
-        print("PLAYLIST: ", self._play_list.playList())
         self.loadCurrentTile(self._play_list.playList()[0])
 
     def reloadMyMusicPlaylist(self):
-        if self._music_tab.playlist():
+        if self._music_tab.playlist() and self._current_playing_tile:
             self._play_list.clear()
             self._play_list.set_playlist(self._music_tab.playlist())
             self._player.setPlaylistIndex(self._current_playing_tile)
 
     def reloadCollectionPlayList(self):
-        print("COLLECTION TAB", self._collection_tab)
-        if self._collection_tab.playlist():
+        if self._collection_tab.playlist() and self._current_playing_tile:
             self._play_list.clear()
             self._play_list.set_playlist(self._collection_tab.playlist())
             self._player.setPlaylistIndex(self._current_playing_tile)

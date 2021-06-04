@@ -6,7 +6,6 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5 import QtMultimedia
 
 
-# todo: problems with auto-play after reaching the last song specifically in collection
 class CurrentlyPlaying(QtWidgets.QWidget):
     current_file = ""
     current_tile = None
@@ -174,7 +173,6 @@ class CurrentlyPlaying(QtWidgets.QWidget):
             self.play_pause_btn.setEnabled(True)
             self.progress.setEnabled(True)
             self.play()
-            print("WHY PLAY")
 
         if status == QtMultimedia.QMediaPlayer.EndOfMedia:
             self.pause()
@@ -296,7 +294,6 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
         self.player.pause()
         self._playing = False
-        print("PLAYING: ", self._playing)
         self.playing.emit(self._playing)
 
 
