@@ -67,6 +67,7 @@ class Notifier:
         self._player.setTitle(obj.getTitle())
         self._player.setCurrentPath(obj.getFile())
         self._player.setPlaylistIndex(self._current_playing_tile)
+        print("INDEX: ", self._play_list.getIndex(self._current_playing_tile))
         self._player.load_file()
 
     def loadMusicPlayList(self, obj: MusicTile):
@@ -181,7 +182,6 @@ class CollectionDialog(QtWidgets.QDialog):
         self._selected_item = None
 
     def addItems(self, items: list):
-        print(items)
         self.collection_list_view.addItems(items)
         self._items = items
 
@@ -203,8 +203,8 @@ class CollectionDialog(QtWidgets.QDialog):
     def confirm(self):
 
         self.err_lbl.show()
-        if len(self.collection_edit.text()) < 5:
-            self.err_lbl.setText("Must contain at-least 5 characters")
+        if len(self.collection_edit.text()) < 3:
+            self.err_lbl.setText("Must contain at-least 3 characters")
             return
 
         if len(self.collection_edit.text()) > 30:

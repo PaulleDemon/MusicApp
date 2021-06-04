@@ -24,20 +24,30 @@ class PlayList:
         PlayList._playList.pop(index)
 
     def next(self):
+
+        if self._current == len(PlayList._playList):
+            return None
+
         self._current += 1
         print("current: ", self._current, len(PlayList._playList), PlayList._playList)
-        if not self._current < len(PlayList._playList):
-            return None, True
 
-        return PlayList._playList[self._current], self._current == len(PlayList._playList)-1
+        return PlayList._playList[self._current]
 
     def previous(self):
+
+        if self._current == -1:
+            return None
+
         self._current -= 1
+        print("CURRENT PREVIOUS: ", self._current)
 
-        if self._current < 0:
-            return None, True
+        return PlayList._playList[self._current]
 
-        return PlayList._playList[self._current], self._current == 0
+    def islast(self):
+        return self._current == len(PlayList._playList) -1
+
+    def isfirst(self):
+        return  self._current == 0
 
     def current(self):
         return PlayList._playList[self._current]

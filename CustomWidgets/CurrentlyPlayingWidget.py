@@ -6,6 +6,7 @@ from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5 import QtMultimedia
 
 
+# todo: problems with auto-play after reaching the last song specifically in collection
 class CurrentlyPlaying(QtWidgets.QWidget):
     current_file = ""
     current_tile = None
@@ -140,8 +141,13 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
     def load_file(self):
         self.play_pause_btn.setEnabled(True)
-        self.next.setEnabled(True)
-        self.previous.setEnabled(True)
+
+        if not self.play_list.islast():
+            self.next.setEnabled(True)
+
+        if not self.play_list.isfirst():
+            self.previous.setEnabled(True)
+
         self.progress.setEnabled(True)
 
         url = QtCore.QUrl.fromLocalFile(self.current_file)
@@ -160,26 +166,30 @@ class CurrentlyPlaying(QtWidgets.QWidget):
             self.progress.setEnabled(False)
             self.pause()
 
-            if self._autoPlay:
+            if status in [QtMultimedia.QMediaPlayer.InvalidMedia, QtMultimedia.QMediaPlayer.NoMedia] \
+                    and self._autoPlay:
                 self.nextSong()
 
         elif status == QtMultimedia.QMediaPlayer.BufferedMedia and not self._media_ended:
             self.play_pause_btn.setEnabled(True)
             self.progress.setEnabled(True)
             self.play()
+            print("WHY PLAY")
 
         if status == QtMultimedia.QMediaPlayer.EndOfMedia:
             self.pause()
-            print("LOOP: ", self._loop)
+            print("END OF MEDIA: ")
             if self._loop:
                 self.setMusicPosition(0)
                 self._play()
                 return
 
-            if self._autoPlay:
+            if self._autoPlay and not self.play_list.islast():
+                print("NEXT")
                 self.nextSong()
                 return
 
+            # self.player.setMedia(QtMultimedia.QMediaContent())
             self._media_ended = True
 
     def setProgressLabel(self, value):
@@ -231,28 +241,34 @@ class CurrentlyPlaying(QtWidgets.QWidget):
     def setPlaylistIndex(self, tile):
         current_index = self.play_list.getIndex(tile)
         self.play_list.setCurrentIndex(current_index)
+        if self.play_list.isfirst():
+            print("IS FIRST")
+            self.previous.setEnabled(False)
+
+        if self.play_list.islast():
+            self.next.setEnabled(False)
 
     def nextSong(self):
 
-        music_obj, last = self.play_list.next()
-        print("Next Song: ", music_obj)
+        music_obj = self.play_list.next()
+
+        print("Next Song: ", music_obj, self.play_list.islast())
         if music_obj is not None:
             self._setCurrentMusicObj(music_obj)
             self.play()
 
-        if last:
+        if self.play_list.islast():
             self.next.setEnabled(False)
 
     def previousSong(self):
-        music_obj, first = self.play_list.previous()
-
+        music_obj = self.play_list.previous()
+        print("PREVIOUS:..", self.play_list.isfirst())
         if music_obj is not None:
             self._setCurrentMusicObj(music_obj)
             self.play()
 
-        if first:
+        if self.play_list.isfirst():
             self.previous.setEnabled(False)
-
 
     def _play(self):
         self.play_pause_btn.setIcon(QtGui.QIcon(Paths.PAUSE))
