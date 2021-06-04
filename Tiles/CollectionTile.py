@@ -4,9 +4,8 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from Tiles.Tile import Tile
 from CustomWidgets.EditableLabel import EditableLabel
 from CustomWidgets.ScrollArea import ScrollView
+from CustomWidgets.FadeLabel import FadeLabel
 
-
-# todo: add scrolling thumbnail
 
 class CollectionTile(Tile):
 
@@ -23,13 +22,17 @@ class CollectionTile(Tile):
         self._play_list = []
         self._playing = False
 
+        self.timer = None
+        self._thumbnail_index = 0
+
         self._collection_children = set()
         self.initUI()
 
     def initUI(self):
         self.setLayout(QtWidgets.QVBoxLayout())
 
-        self.thumb_nail = QtWidgets.QLabel()
+        self.thumb_nail = FadeLabel()
+        # self.thumb_nail.finished.connect(self.updateThumbNail)
         self.thumb_nail.setScaledContents(True)
 
         self.scroll_view = CollectionTileScrollView()
@@ -62,6 +65,9 @@ class CollectionTile(Tile):
 
     def setThumbNail(self, thumb_nail):
         self.thumb_nail.setPixmap(thumb_nail)
+        if len(self._collection_children) > 1:
+            print("YAAA")
+            self.thumb_nail.fadeIn()
 
     def setCollectionName(self, collection_name):
         self._collection_name = collection_name
@@ -84,6 +90,35 @@ class CollectionTile(Tile):
         self._play_list.remove(obj)
         self.reload()
 
+    def updateThumbNail(self):
+
+        print("UPDATING")
+
+        if self.timer:
+            self.timer.stop()
+            self.timer.deleteLater()
+
+        if not self._playing:
+
+            if self._thumbnail_index == len(self._collection_children):
+                self._thumbnail_index = 0
+
+            if self._thumbnail_index < len(self._collection_children):
+
+                thumbnail = list(self._collection_children)[self._thumbnail_index].getThumbnail()
+                self.setThumbNail(thumbnail)
+
+            if len(self._collection_children) == 1:
+                return
+
+            self._thumbnail_index += 1
+
+            self.timer = QtCore.QTimer()
+            self.timer.timeout.connect(self.updateThumbNail)
+            self.timer.setSingleShot(True)
+            self.timer.start(self.thumb_nail.animation_duration+5000)
+
+
     def reload(self):
 
         self.scroll_view.children()
@@ -96,6 +131,8 @@ class CollectionTile(Tile):
             self.scroll_view.addWidget(collection_inner_tile)
 
         self.reloadPlayList.emit()
+        print("RELOADED")
+        self.updateThumbNail()
 
     def play_pause(self):
         self._playing = not self._playing
