@@ -28,6 +28,7 @@ class Notifier:
         self._music_tab.play.connect(self.loadMusicPlayList)
         self._music_tab.addFavourite.connect(self.markFavourite)
         self._music_tab.addToCollection.connect(self.addToCollection)
+        self._music_tab.playlist_added.connect(self.reloadMyMusicPlaylist)
 
     def setFavouriteTab(self, fav):
         self._favourite_tab = fav
