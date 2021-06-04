@@ -1,11 +1,13 @@
 from PyQt5 import QtWidgets, QtCore
 from CustomWidgets import ScrollArea
+from CustomWidgets.SearchScrollView import SearchScrollView
 from Tiles.CollectionTile import CollectionTile
 
 
 class MyCollection(QtWidgets.QWidget):
 
     playing = QtCore.pyqtSignal(object)
+    reloadPlayList = QtCore.pyqtSignal()
 
     def __init__(self, *args, **kwargs):
         super(MyCollection, self).__init__(*args, **kwargs)
@@ -13,10 +15,27 @@ class MyCollection(QtWidgets.QWidget):
         self._current_playing_collection = None
 
         self.setLayout(QtWidgets.QVBoxLayout())
+        self.stack_view = QtWidgets.QStackedWidget()
+
         self.view = CollectionScrollView()
         self.view.playing.connect(self.setCurrentPlayingCollection)
+        self.view.reloadPlaylist.connect(self.reloadPlayList.emit)
 
-        self.layout().addWidget(self.view)
+        self.search_bar = QtWidgets.QLineEdit()
+        self.search_bar.setClearButtonEnabled(True)
+        self.search_bar.setPlaceholderText("Search")
+        self.search_bar.setMinimumWidth(350)
+        self.search_bar.textChanged.connect(self.search)
+
+        self.search_display_widget = SearchScrollView()
+
+        self.stack_view.addWidget(self.view)
+        self.stack_view.addWidget(self.search_display_widget)
+
+        self.stack_view.setCurrentIndex(0)
+
+        self.layout().addWidget(self.search_bar)
+        self.layout().addWidget(self.stack_view)
 
     def addTile(self, obj, collection_name):
         self.view.addCollectionTile(obj, collection_name)
@@ -32,12 +51,29 @@ class MyCollection(QtWidgets.QWidget):
         self.playing.emit(self._current_playing_collection)
 
     def playlist(self):
-        return self._current_playing_collection.playlist()
+        return self._current_playing_collection.playlist() if self._current_playing_collection else None
+
+    def search(self, string):
+        if not string:
+            self.stack_view.setCurrentIndex(0)
+            return
+
+        if self.stack_view.currentIndex() == 0:
+            self.stack_view.setCurrentIndex(1)
+
+        widgets = self.view.widgets()
+
+        self.search_display_widget.removeTileParent()
+        self.search_display_widget.deleteAll()
+        for tile in widgets:
+            if tile.getCollectionName().lower().startswith(string.lower()):
+                self.search_display_widget.addCollectionTile(tile)
 
 
 class CollectionScrollView(ScrollArea.ScrollView):
 
     playing = QtCore.pyqtSignal(object)
+    reloadPlaylist = QtCore.pyqtSignal()
 
     def __init__(self, *args):
         super(CollectionScrollView, self).__init__(*args)
@@ -46,6 +82,7 @@ class CollectionScrollView(ScrollArea.ScrollView):
         if name not in self.getCollectionNames():
             tile = CollectionTile(name, (250, 250))
             tile.playing.connect(self.playing.emit)
+            tile.reloadPlayList.connect(self.reloadPlaylist.emit)
             self.addWidget(tile)
 
         collection_tile = self.getWidgetByName(name)
@@ -72,6 +109,9 @@ class CollectionScrollView(ScrollArea.ScrollView):
     def getCollectionNames(self):
         wid = self.getWidgets()
         return [x.getCollectionName() for x in wid]
+
+    def widgets(self):
+        return self.getWidgets()
 
     def removeCollectionTile(self, obj):
 

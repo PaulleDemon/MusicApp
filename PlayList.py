@@ -25,20 +25,24 @@ class PlayList:
 
     def next(self):
 
+        self._current += 1
+
         if self._current == len(PlayList._playList):
+            self._current -= 1
             return None
 
-        self._current += 1
         print("current: ", self._current, len(PlayList._playList), PlayList._playList)
 
         return PlayList._playList[self._current]
 
     def previous(self):
 
+        self._current -= 1
+
         if self._current == -1:
+            self._current = 0
             return None
 
-        self._current -= 1
         print("CURRENT PREVIOUS: ", self._current)
 
         return PlayList._playList[self._current]

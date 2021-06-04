@@ -185,7 +185,6 @@ class CurrentlyPlaying(QtWidgets.QWidget):
                 return
 
             if self._autoPlay and not self.play_list.islast():
-                print("NEXT")
                 self.nextSong()
                 return
 
@@ -242,17 +241,21 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         current_index = self.play_list.getIndex(tile)
         self.play_list.setCurrentIndex(current_index)
         if self.play_list.isfirst():
-            print("IS FIRST")
             self.previous.setEnabled(False)
+
+        else:
+            self.previous.setEnabled(True)
 
         if self.play_list.islast():
             self.next.setEnabled(False)
+
+        else:
+            self.next.setEnabled(True)
 
     def nextSong(self):
 
         music_obj = self.play_list.next()
 
-        print("Next Song: ", music_obj, self.play_list.islast())
         if music_obj is not None:
             self._setCurrentMusicObj(music_obj)
             self.play()
@@ -262,7 +265,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
     def previousSong(self):
         music_obj = self.play_list.previous()
-        print("PREVIOUS:..", self.play_list.isfirst())
+
         if music_obj is not None:
             self._setCurrentMusicObj(music_obj)
             self.play()

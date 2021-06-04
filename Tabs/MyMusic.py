@@ -13,6 +13,7 @@ class MyMusic(QtWidgets.QWidget):  # This is the music tab
     play = QtCore.pyqtSignal(object)
     addFavourite = QtCore.pyqtSignal(object)
     addToCollection = QtCore.pyqtSignal(object, bool)
+    playlist_added = QtCore.pyqtSignal()
 
     def __init__(self, *args, **kwargs):
         super(MyMusic, self).__init__(*args, **kwargs)
@@ -29,9 +30,6 @@ class MyMusic(QtWidgets.QWidget):  # This is the music tab
         self.stack_view = QtWidgets.QStackedWidget()
 
         self.view = MusicScrollView()
-        # self.view.play.connect(self.notifier.loadObject)
-        # self.view.addFavourite.connect(self.notifier.markFavourite)
-        # self.view.addToCollection.connect(self.notifier.addToCollection)
 
         self.view.play.connect(self.play.emit)
         self.view.addFavourite.connect(self.addFavourite.emit)
@@ -68,7 +66,7 @@ class MyMusic(QtWidgets.QWidget):  # This is the music tab
         self.search_display_widget.deleteAll()
         for tile in widgets:
             if tile.getTitle().lower().startswith(string.lower()):
-                self.search_display_widget.addTile(tile)
+                self.search_display_widget.addMusicTile(tile)
 
     def pause(self):
         self.view.currently_playing_tile.pause()
@@ -109,6 +107,7 @@ class MyMusic(QtWidgets.QWidget):  # This is the music tab
         for music, file in zip(self.music_files, self.file_path):
             self.view.addTile(music, file)
 
+        self.playlist_added.emit()
         # for x in self.view.widgets():
         #     self.playlist.add_to_playlist(x)
 

@@ -7,15 +7,18 @@ from CustomWidgets.ScrollArea import ScrollView
 
 
 # todo: add scrolling thumbnail
+# todo: update the next button when a new objetc is added to collection.
 class CollectionTile(Tile):
 
     playing = QtCore.pyqtSignal(object)
+    reloadPlayList = QtCore.pyqtSignal()
 
     def __init__(self, collection_name, *args, **kwargs):
         super(CollectionTile, self).__init__(*args, **kwargs)
 
         self.setStyleSheet('background-color: red;')
 
+        self._children = set()
         self._collection_name = collection_name
         self._play_list = []
         self._playing = False
@@ -92,6 +95,8 @@ class CollectionTile(Tile):
             collection_inner_tile = CollectionInnerTile(obj, self)
             self.scroll_view.addWidget(collection_inner_tile)
 
+        self.reloadPlayList.emit()
+
     def play_pause(self):
         self._playing = not self._playing
 
@@ -103,6 +108,9 @@ class CollectionTile(Tile):
 
         self.playing.emit(self)
 
+    def isPlaying(self):
+        return self._playing
+
     def pause(self):
         self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
         self.play_btn.setToolTip("play")
@@ -111,15 +119,27 @@ class CollectionTile(Tile):
         self.play_btn.setIcon(QtGui.QIcon(Paths.PAUSE))
         self.play_btn.setToolTip("pause")
 
-    def mousePressEvent(self, a0: QtGui.QMouseEvent) -> None:
+    def mousePressEvent(self, a0: QtGui.QMouseEvent) -> None:  # shows the inner tile once you click on collection tile
         self.scroll_view.show()
         super(CollectionTile, self).mousePressEvent(a0)
 
     def getCollectionName(self):
         return self._collection_name
 
+    def getCurrentThumbnail(self):
+        return self.thumb_nail.pixmap() if self.thumb_nail.pixmap() else QtGui.QPixmap()
+
     def playlist(self):
         return list(self._collection_children)
+
+    def addChild(self, child):  # useful for search
+        self._children.add(child)
+
+    def removeChild(self, child):
+        try:
+            self._children.remove(child)
+        except KeyError:
+            pass
 
     def deleteLater(self) -> None:
 
@@ -127,6 +147,12 @@ class CollectionTile(Tile):
             x.clicked(self.sender())
 
         super(CollectionTile, self).deleteLater()
+
+    def clicked(self, btn: QtWidgets.QPushButton = None):
+        obj_name = btn.objectName()
+
+        if obj_name == "PlayButton":
+            self.play_pause()
 
 
 class CollectionInnerTile(Tile):  # This is tile inside the Collections

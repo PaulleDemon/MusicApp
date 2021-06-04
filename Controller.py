@@ -35,6 +35,7 @@ class Notifier:
     def setCollectionTab(self, tab):
         self._collection_tab = tab
         self._collection_tab.playing.connect(self.loadCollectionPlayList)
+        self._collection_tab.reloadPlayList.connect(self.reloadCollectionPlayList)
 
     def setPlayer(self, player: CustomWidgets.CurrentlyPlayingWidget.CurrentlyPlaying):
         self._player = player
@@ -56,7 +57,7 @@ class Notifier:
         _, favourite, _ = obj.properties()
 
         if favourite:
-            self._favourite_tab.addTile(obj)
+            self._favourite_tab.addMusicTile(obj)
 
         else:
             self._favourite_tab.removeTile(obj)
@@ -105,6 +106,19 @@ class Notifier:
         self._play_list.set_playlist(self._collection_tab.playlist())
         print("PLAYLIST: ", self._play_list.playList())
         self.loadCurrentTile(self._play_list.playList()[0])
+
+    def reloadMyMusicPlaylist(self):
+        if self._music_tab.playlist():
+            self._play_list.clear()
+            self._play_list.set_playlist(self._music_tab.playlist())
+            self._player.setPlaylistIndex(self._current_playing_tile)
+
+    def reloadCollectionPlayList(self):
+        print("COLLECTION TAB", self._collection_tab)
+        if self._collection_tab.playlist():
+            self._play_list.clear()
+            self._play_list.set_playlist(self._collection_tab.playlist())
+            self._player.setPlaylistIndex(self._current_playing_tile)
 
     def _checkPlayerPlayPause(self, playing):
         if playing:
