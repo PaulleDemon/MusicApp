@@ -14,6 +14,7 @@ class Notifier:
 
         self._play_list = PlayList()
         self._current_playing_tile = None
+        self._current_playing_collection = None
         self._player = None
         self._music_tab = None
         self._favourite_tab = None
@@ -68,7 +69,6 @@ class Notifier:
         self._player.setTitle(obj.getTitle())
         self._player.setCurrentPath(obj.getFile())
         self._player.setPlaylistIndex(self._current_playing_tile)
-        print("INDEX: ", self._play_list.getIndex(self._current_playing_tile))
         self._player.load_file()
 
     def loadMusicPlayList(self, obj: MusicTile):
@@ -89,9 +89,9 @@ class Notifier:
         self.loadCurrentTile(obj)
 
     def loadCollectionPlayList(self, collection):
-
-        print("LOADING....")
-        if self._current_playing_tile == collection:
+        print("Loading......", collection, self._current_playing_collection)
+        if self._current_playing_collection == collection:
+            print("YAA")
             self.play_pause()
             return
 
@@ -102,6 +102,7 @@ class Notifier:
             except NameError:
                 raise NotImplementedError("Pause must be implemented")
 
+        self._current_playing_collection = collection
         self._play_list.clear()
         self._play_list.set_playlist(self._collection_tab.playlist())
         self.loadCurrentTile(self._play_list.playList()[0])
@@ -136,7 +137,7 @@ class Notifier:
     def play_pause(self):
 
         self._playing = not self._playing
-
+        print("PLAYING2: ", self._playing)
         if self._playing:
             self.play()
             self._player.play()

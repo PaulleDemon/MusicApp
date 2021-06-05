@@ -17,7 +17,6 @@ class FadeLabel(QtWidgets.QLabel):
     def fadeIn(self):
 
         self.animation = QtCore.QPropertyAnimation(self.opacity_effect, b"opacity")
-        # self.animation.setEasingCurve(QtCore.QEasingCurve(QtCore.QEasingCurve.InBack))
         self.animation.finished.connect(self.finished.emit)
         self.animation.setDuration(self.animation_duration)
         self.animation.setStartValue(0)
@@ -26,8 +25,6 @@ class FadeLabel(QtWidgets.QLabel):
 
     def fadeOut(self):
         self.animation = QtCore.QPropertyAnimation(self.opacity_effect, b"opacity")
-        # self.animation.setEasingCurve(QtCore.QEasingCurve(QtCore.QEasingCurve.OutBack))
-        # self.animation.finished.connect(self.animationFinished)
         self.animation.finished.connect(self.finished.emit)
         self.animation.valueChanged.connect(self.animationFinished)
         self.animation.setDuration(self.animation_duration)

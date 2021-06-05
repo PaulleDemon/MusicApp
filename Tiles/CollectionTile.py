@@ -11,6 +11,8 @@ class CollectionTile(Tile):
 
     playing = QtCore.pyqtSignal(object)
     reloadPlayList = QtCore.pyqtSignal()
+    collectionClicked = QtCore.pyqtSignal(object)
+    closed = QtCore.pyqtSignal()
 
     def __init__(self, collection_name, *args, **kwargs):
         super(CollectionTile, self).__init__(*args, **kwargs)
@@ -32,11 +34,10 @@ class CollectionTile(Tile):
         self.setLayout(QtWidgets.QVBoxLayout())
 
         self.thumb_nail = FadeLabel()
-        # self.thumb_nail.finished.connect(self.updateThumbNail)
         self.thumb_nail.setScaledContents(True)
 
         self.scroll_view = CollectionTileScrollView()
-        self.scroll_view.hide()
+        self.scroll_view.closed.connect(self.closed.emit)
 
         widget = QtWidgets.QWidget()
         widget.setLayout(QtWidgets.QVBoxLayout())
@@ -66,14 +67,12 @@ class CollectionTile(Tile):
     def setThumbNail(self, thumb_nail):
         self.thumb_nail.setPixmap(thumb_nail)
         if len(self._collection_children) > 1:
-            print("YAAA")
             self.thumb_nail.fadeIn()
 
     def setCollectionName(self, collection_name):
         self._collection_name = collection_name
 
     def addToCollection(self, obj):  # provide a music object
-
         self._collection_children.add(obj)
         self._play_list.append(obj)
         self.reload()
@@ -92,13 +91,11 @@ class CollectionTile(Tile):
 
     def updateThumbNail(self):
 
-        print("UPDATING")
-
         if self.timer:
             self.timer.stop()
-            self.timer.deleteLater()
+            # self.timer.deleteLater()
 
-        if not self._playing:
+        if not self._playing and self.isVisible():
 
             if self._thumbnail_index == len(self._collection_children):
                 self._thumbnail_index = 0
@@ -118,7 +115,6 @@ class CollectionTile(Tile):
             self.timer.setSingleShot(True)
             self.timer.start(self.thumb_nail.animation_duration+5000)
 
-
     def reload(self):
 
         self.scroll_view.children()
@@ -127,16 +123,15 @@ class CollectionTile(Tile):
         self.scroll_view.deleteAll()
 
         for obj in self._collection_children:
-            collection_inner_tile = CollectionInnerTile(obj, self)
+            collection_inner_tile = CollectionInnerTile(obj, self, (250, 250))
             self.scroll_view.addWidget(collection_inner_tile)
 
         self.reloadPlayList.emit()
-        print("RELOADED")
         self.updateThumbNail()
 
     def play_pause(self):
         self._playing = not self._playing
-
+        print("PLAYING...", self._playing)
         if self._playing:
             self.play()
 
@@ -156,9 +151,14 @@ class CollectionTile(Tile):
         self.play_btn.setIcon(QtGui.QIcon(Paths.PAUSE))
         self.play_btn.setToolTip("pause")
 
-    def mousePressEvent(self, a0: QtGui.QMouseEvent) -> None:  # shows the inner tile once you click on collection tile
-        self.scroll_view.show()
-        super(CollectionTile, self).mousePressEvent(a0)
+    def mousePressEvent(self, event: QtGui.QMouseEvent) -> None:  # shows the inner tile once you click on collection tile
+        self.collectionClicked.emit(self.scroll_view)
+        super(CollectionTile, self).mousePressEvent(event)
+
+    def showEvent(self, event: QtGui.QShowEvent) -> None:
+        print("Showing")
+        self.updateThumbNail()
+        super(CollectionTile, self).showEvent(event)
 
     def getCollectionName(self):
         return self._collection_name
@@ -292,22 +292,44 @@ class CollectionInnerTile(Tile):  # This is tile inside the Collections
         return self.parent
 
 
-class CollectionTileScrollView(ScrollView):
+class CollectionTileScrollView(QtWidgets.QWidget):
+
+    closed = QtCore.pyqtSignal()
+
+    def __init__(self, *args, **kwargs):
+        super(CollectionTileScrollView, self).__init__(*args, **kwargs)
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+
+        self.setLayout(QtWidgets.QVBoxLayout())
+
+        self.close_btn = QtWidgets.QPushButton('X', clicked=self.close)
+        self.close_btn.setFixedSize(25, 25)
+        self.scroll_view = ScrollView()
+
+        self.layout().addWidget(self.close_btn, alignment=QtCore.Qt.AlignRight)
+        self.layout().addWidget(self.scroll_view)
+
+    def closeEvent(self, a0: QtGui.QCloseEvent) -> None:
+        self.closed.emit()
+        super(CollectionTileScrollView, self).closeEvent(a0)
 
     def addTile(self, obj: CollectionTile):
         tile = CollectionTile(obj, (250, 250))
         self.addWidget(tile)
 
     def addWidget(self, widget):
-        self.grid_layout.addWidget(widget, self._row, self._column)
-        if self._column == 3:
-            self._row += 1
-            self._column = 0
+        self.scroll_view.grid_layout.addWidget(widget, self.scroll_view.row, self.scroll_view.column)
+        if self.scroll_view._column == 3:
+            self.scroll_view._row += 1
+            self.scroll_view._column = 0
 
         else:
-            self._column += 1
+            self.scroll_view._column += 1
 
     def removeTileParent(self):
-        for x in range(self.grid_layout.count()):
-            searchTile = self.grid_layout.itemAt(x).widget()
+        for x in range(self.scroll_view.grid_layout.count()):
+            searchTile = self.scroll_view.grid_layout.itemAt(x).widget()
             searchTile.deleteLater()
+
+    def deleteAll(self):
+        self.scroll_view.deleteAll()

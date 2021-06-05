@@ -4,6 +4,7 @@ from CustomWidgets.SearchScrollView import SearchScrollView
 from Tiles.CollectionTile import CollectionTile
 
 
+# todo: show scroll view of Collection in widget
 class MyCollection(QtWidgets.QWidget):
 
     playing = QtCore.pyqtSignal(object)
@@ -13,6 +14,7 @@ class MyCollection(QtWidgets.QWidget):
         super(MyCollection, self).__init__(*args, **kwargs)
 
         self._current_playing_collection = None
+        self._current_visible_item = None
 
         self.setLayout(QtWidgets.QVBoxLayout())
         self.stack_view = QtWidgets.QStackedWidget()
@@ -20,6 +22,8 @@ class MyCollection(QtWidgets.QWidget):
         self.view = CollectionScrollView()
         self.view.playing.connect(self.setCurrentPlayingCollection)
         self.view.reloadPlaylist.connect(self.reloadPlayList.emit)
+        self.view.tileClicked.connect(self.displayInnerCollection)
+        self.view.tileClosed.connect(self.closeInnerCollection)
 
         self.search_bar = QtWidgets.QLineEdit()
         self.search_bar.setClearButtonEnabled(True)
@@ -28,7 +32,6 @@ class MyCollection(QtWidgets.QWidget):
         self.search_bar.textChanged.connect(self.search)
 
         self.search_display_widget = SearchScrollView()
-
         self.stack_view.addWidget(self.view)
         self.stack_view.addWidget(self.search_display_widget)
 
@@ -53,12 +56,25 @@ class MyCollection(QtWidgets.QWidget):
     def playlist(self):
         return self._current_playing_collection.playlist() if self._current_playing_collection else None
 
+    def displayInnerCollection(self, collection):
+
+        self._current_visible_item = collection
+
+        self.stack_view.addWidget(collection)
+        self.stack_view.setCurrentIndex(2)
+
+    def closeInnerCollection(self):
+        if self._current_visible_item:
+            self.stack_view.removeWidget(self._current_visible_item)
+
+        self.stack_view.setCurrentIndex(0)
+
     def search(self, string):
         if not string:
             self.stack_view.setCurrentIndex(0)
             return
 
-        if self.stack_view.currentIndex() == 0:
+        if self.stack_view.currentIndex() != 1:
             self.stack_view.setCurrentIndex(1)
 
         widgets = self.view.widgets()
@@ -74,6 +90,8 @@ class CollectionScrollView(ScrollArea.ScrollView):
 
     playing = QtCore.pyqtSignal(object)
     reloadPlaylist = QtCore.pyqtSignal()
+    tileClicked = QtCore.pyqtSignal(object)
+    tileClosed = QtCore.pyqtSignal()
 
     def __init__(self, *args):
         super(CollectionScrollView, self).__init__(*args)
@@ -83,6 +101,8 @@ class CollectionScrollView(ScrollArea.ScrollView):
             tile = CollectionTile(name, (250, 250))
             tile.playing.connect(self.playing.emit)
             tile.reloadPlayList.connect(self.reloadPlaylist.emit)
+            tile.collectionClicked.connect(self.tileClicked.emit)
+            tile.closed.connect(self.tileClosed.emit)
             self.addWidget(tile)
 
         collection_tile = self.getWidgetByName(name)
