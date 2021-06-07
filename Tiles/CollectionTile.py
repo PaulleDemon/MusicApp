@@ -7,7 +7,7 @@ from CustomWidgets.ScrollArea import ScrollView
 from CustomWidgets.FadeLabel import FadeLabel
 
 
-class CollectionTile(Tile):
+class CollectionTile(Tile):  # collection tile
 
     playing = QtCore.pyqtSignal(object)
     reloadPlayList = QtCore.pyqtSignal()
@@ -35,19 +35,14 @@ class CollectionTile(Tile):
 
         self.thumb_nail = FadeLabel()
         self.thumb_nail.setScaledContents(True)
+        self.thumb_nail.setLayout(QtWidgets.QVBoxLayout())
 
         self.scroll_view = CollectionTileScrollView()
         self.scroll_view.closed.connect(self.closed.emit)
 
-        widget = QtWidgets.QWidget()
-        widget.setLayout(QtWidgets.QVBoxLayout())
-
         self.btns = QtWidgets.QWidget()
         self.btns.setLayout(QtWidgets.QHBoxLayout())
         self.btns.hide()
-
-        self.blur_effect = QtWidgets.QGraphicsBlurEffect()
-        self.blur_effect.setBlurRadius(2)
 
         delete_collection_btn = QtWidgets.QPushButton("Collection", clicked=self.deleteLater)
         self.play_btn = QtWidgets.QPushButton(icon=QtGui.QIcon(Paths.PLAY), clicked=self.play_pause)
@@ -58,11 +53,9 @@ class CollectionTile(Tile):
         self.btns.layout().addWidget(delete_collection_btn)
         self.btns.layout().addWidget(self.play_btn)
 
-        widget.layout().addWidget(self.btns)
-        widget.layout().addWidget(collection_label)
-
+        self.thumb_nail.layout().addWidget(self.btns, alignment=QtCore.Qt.AlignBottom)
         self.layout().addWidget(self.thumb_nail)
-        self.layout().addWidget(widget)
+        self.layout().addWidget(collection_label)
 
     def setThumbNail(self, thumb_nail):
         self.thumb_nail.setPixmap(thumb_nail)
@@ -80,6 +73,7 @@ class CollectionTile(Tile):
     def removeFromCollection(self, obj):
 
         widgets = self.scroll_view.getWidgets()
+        print(widgets)
         for x in widgets:
             if x.musicObj == obj:
                 x.deleteLater()
@@ -333,3 +327,6 @@ class CollectionTileScrollView(QtWidgets.QWidget):
 
     def deleteAll(self):
         self.scroll_view.deleteAll()
+
+    def getWidgets(self):
+        return self.scroll_view.getWidgets()

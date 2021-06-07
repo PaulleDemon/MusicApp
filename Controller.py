@@ -7,7 +7,12 @@ from PyQt5 import QtWidgets, QtCore
 
 class Notifier:
 
+    # This class is responsible for interaction between class it passes information from one class to another.
+    # All the tabs(MyMusic, Favourite, Collection) and CurrentlyPlayingWidget must be registered here. Once it's
+    # registered it controls which, how each object interacts with currentlyPlayingWidget
+
     _current_playing_tile = None
+    _current_playing_collection = None
 
     def __init__(self):
         self._playing = False
@@ -20,30 +25,31 @@ class Notifier:
         self._favourite_tab = None
         self._collection_tab = None
 
-    def enableAutoPlay(self, enable=False):
+    def enableAutoPlay(self, enable=False):  # enable auto next
         self._player.autoPlayNext(enable)
 
-    def setMusicTab(self, tab):
+    def setMusicTab(self, tab): # register music tab
         self._music_tab = tab
         self._music_tab.play.connect(self.loadMusicPlayList)
         self._music_tab.addFavourite.connect(self.markFavourite)
         self._music_tab.addToCollection.connect(self.addToCollection)
         self._music_tab.playlist_added.connect(self.reloadMyMusicPlaylist)
 
-    def setFavouriteTab(self, fav):
+    def setFavouriteTab(self, fav):  # register favourite's tab
         self._favourite_tab = fav
 
-    def setCollectionTab(self, tab):
+    def setCollectionTab(self, tab):  # registers the collection tab
         self._collection_tab = tab
         self._collection_tab.playing.connect(self.loadCollectionPlayList)
         self._collection_tab.reloadPlayList.connect(self.reloadCollectionPlayList)
 
     def setPlayer(self, player: CustomWidgets.CurrentlyPlayingWidget.CurrentlyPlaying):
+        # registers the CurrentlyPlayingWidget
         self._player = player
         self._player.playing.connect(self._checkPlayerPlayPause)
         self._player.current_tile_changed.connect(self.setCurrentTile)
 
-    def setCurrentTile(self, obj):
+    def setCurrentTile(self, obj):  # This will set current music object that is to be played
         self._current_playing_tile.pause()
         self._current_playing_tile = obj
         self._playing = self._player.isPlaying()
@@ -54,7 +60,7 @@ class Notifier:
         else:
             self.pause()
 
-    def markFavourite(self, obj):
+    def markFavourite(self, obj):  # marks a music object as favourite and adds to Favourites tab
         _, favourite, _ = obj.properties()
 
         if favourite:
@@ -63,7 +69,7 @@ class Notifier:
         else:
             self._favourite_tab.removeTile(obj)
 
-    def loadCurrentTile(self, obj):
+    def loadCurrentTile(self, obj):  # loads current playing object and sets the thumbnail of currentlyPlayingWidget
         self._current_playing_tile = obj
         self._player.setThumbNail(obj.getThumbnail())
         self._player.setTitle(obj.getTitle())
@@ -71,7 +77,7 @@ class Notifier:
         self._player.setPlaylistIndex(self._current_playing_tile)
         self._player.load_file()
 
-    def loadMusicPlayList(self, obj: MusicTile):
+    def loadMusicPlayList(self, obj: MusicTile):  # loads musics from MyMusic tab to playlist
 
         if self._current_playing_tile == obj:
             self.play_pause()
@@ -89,9 +95,10 @@ class Notifier:
         self.loadCurrentTile(obj)
 
     def loadCollectionPlayList(self, collection):
-        print("Loading......", collection, self._current_playing_collection)
+        # loads music from collection.
+        # Note only one playlist can be stored at an instance. When a new one is loaded old one is removed
+
         if self._current_playing_collection == collection:
-            print("YAA")
             self.play_pause()
             return
 
@@ -108,36 +115,37 @@ class Notifier:
         self.loadCurrentTile(self._play_list.playList()[0])
 
     def reloadMyMusicPlaylist(self):
+        # reloads playlist this is done when new object is added in the music tab
         if self._music_tab.playlist() and self._current_playing_tile:
             self._play_list.clear()
             self._play_list.set_playlist(self._music_tab.playlist())
             self._player.setPlaylistIndex(self._current_playing_tile)
 
     def reloadCollectionPlayList(self):
+        # reloads playlist this is done when new object is added in the collection tab
         if self._collection_tab.playlist() and self._current_playing_tile:
             self._play_list.clear()
             self._play_list.set_playlist(self._collection_tab.playlist())
             self._player.setPlaylistIndex(self._current_playing_tile)
 
-    def _checkPlayerPlayPause(self, playing):
+    def _checkPlayerPlayPause(self, playing): # checks player state
         if playing:
             self.play()
 
         else:
             self.pause()
 
-    def play(self):
+    def play(self):  # plays music
         self._current_playing_tile.play()
         self._playing = True
 
-    def pause(self):
+    def pause(self): # pauses music
         self._current_playing_tile.pause()
         self._playing = False
 
-    def play_pause(self):
+    def play_pause(self): # if a music is being played stops it, else plays it
 
         self._playing = not self._playing
-        print("PLAYING2: ", self._playing)
         if self._playing:
             self.play()
             self._player.play()
@@ -147,6 +155,7 @@ class Notifier:
             self._player.pause()
 
     def addToCollection(self, obj, addToCollection=True):
+        # adds a music object to collection, if already in collection removes it
 
         if not addToCollection:
             self._collection_tab.removeTile(obj, obj.getCollectionName())
@@ -164,7 +173,7 @@ class Notifier:
             obj._collection = False
 
 
-class CollectionDialog(QtWidgets.QDialog):
+class CollectionDialog(QtWidgets.QDialog):  # This is a collection dialog that ask user to enter collection name
 
     def __init__(self, *args, **kwargs):
         super(CollectionDialog, self).__init__(*args, **kwargs)

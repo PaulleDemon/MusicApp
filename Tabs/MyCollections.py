@@ -4,8 +4,7 @@ from CustomWidgets.SearchScrollView import SearchScrollView
 from Tiles.CollectionTile import CollectionTile
 
 
-# todo: show scroll view of Collection in widget
-class MyCollection(QtWidgets.QWidget):
+class MyCollection(QtWidgets.QWidget):  # collection tab add Collection tile here
 
     playing = QtCore.pyqtSignal(object)
     reloadPlayList = QtCore.pyqtSignal()
@@ -86,7 +85,7 @@ class MyCollection(QtWidgets.QWidget):
                 self.search_display_widget.addCollectionTile(tile)
 
 
-class CollectionScrollView(ScrollArea.ScrollView):
+class CollectionScrollView(ScrollArea.ScrollView):  # This is collection scroll view
 
     playing = QtCore.pyqtSignal(object)
     reloadPlaylist = QtCore.pyqtSignal()

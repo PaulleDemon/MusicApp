@@ -8,7 +8,7 @@ from PIL import Image
 from tinytag import TinyTag
 
 
-class MusicTile(Tile):
+class MusicTile(Tile):  # Music Tile
     playing = QtCore.pyqtSignal(object)  # path
     addFavourite = QtCore.pyqtSignal(object)
     addToCollection = QtCore.pyqtSignal(object, bool)
@@ -59,9 +59,10 @@ class MusicTile(Tile):
 
         self.setObjectName("MusicTile")
 
-        self.label = QtWidgets.QLabel()
-        self.label.setPixmap(image)
-        self.label.setScaledContents(True)
+        self.thumb_nail = QtWidgets.QLabel()
+        self.thumb_nail.setPixmap(image)
+        self.thumb_nail.setScaledContents(True)
+        self.thumb_nail.setLayout(QtWidgets.QVBoxLayout())
 
         self.music_title = QtWidgets.QLabel(text=title)
         self.setToolTip(title)
@@ -98,23 +99,20 @@ class MusicTile(Tile):
 
         self.btns.hide()
 
-        self.blur_effect = QtWidgets.QGraphicsBlurEffect()
-        self.blur_effect.setBlurRadius(2)
-
         self.shadow_effect = QtWidgets.QGraphicsDropShadowEffect()
         self.shadow_effect.setBlurRadius(5)
         self.shadow_effect.setOffset(3, 3)
         self.btns.setGraphicsEffect(self.shadow_effect)
 
-        self.label.setGraphicsEffect(self.blur_effect)
-        self.blur_effect.setEnabled(False)
-
-        self.layout().addWidget(self.label)
-        self.layout().addWidget(self.btns)
+        self.thumb_nail.layout().addWidget(self.btns, alignment=QtCore.Qt.AlignBottom)
+        self.layout().addWidget(self.thumb_nail)
         self.layout().addWidget(self.music_title)
 
         self._children = set()
         self._collection_name = None
+
+    def addChild(self, child):
+        self._children.add(child)
 
     def getMusic(self) -> TinyTag:
         return self.music
@@ -123,7 +121,7 @@ class MusicTile(Tile):
         return self.file_path
 
     def getThumbnail(self):
-        return self.label.pixmap()
+        return self.thumb_nail.pixmap()
 
     def getTitle(self):
         return self.music_title.text()
@@ -136,9 +134,6 @@ class MusicTile(Tile):
 
     def properties(self):
         return [self._playing, self._favourite, self._collection]
-
-    def addChild(self, child):
-        self._children.add(child)
 
     def removeChild(self, child):
         try:
@@ -224,8 +219,7 @@ class MusicTile(Tile):
                 self._collection_name = None
 
 
-
-class FavouritesTile(Tile):
+class FavouritesTile(Tile):  # Favourites tile.
 
     def __init__(self, parent: MusicTile, *args, **kwargs):
         super(FavouritesTile, self).__init__(*args, **kwargs)
@@ -237,6 +231,7 @@ class FavouritesTile(Tile):
         self.thumb_nail = QtWidgets.QLabel()
         self.thumb_nail.setScaledContents(True)
         self.thumb_nail.setPixmap(self.parent.getThumbnail())
+        self.thumb_nail.setLayout(QtWidgets.QVBoxLayout())
 
         self.title = QtWidgets.QLabel(self.parent.getTitle())
 
@@ -263,21 +258,15 @@ class FavouritesTile(Tile):
         self.btns.layout().addWidget(self.favourite, alignment=QtCore.Qt.AlignBottom)
         self.btns.layout().addWidget(self.play_btn, alignment=QtCore.Qt.AlignBottom)
 
-        self.blur_effect = QtWidgets.QGraphicsBlurEffect()
-        self.blur_effect.setBlurRadius(2)
-
         self.shadow_effect = QtWidgets.QGraphicsDropShadowEffect()
         self.shadow_effect.setBlurRadius(5)
         self.shadow_effect.setOffset(3, 3)
+
         self.btns.setGraphicsEffect(self.shadow_effect)
 
-        self.thumb_nail.setGraphicsEffect(self.blur_effect)
-        self.blur_effect.setEnabled(False)
-
+        self.thumb_nail.layout().addWidget(self.btns, alignment=QtCore.Qt.AlignBottom)
         self.layout().addWidget(self.thumb_nail)
         self.layout().addWidget(self.title)
-
-        self.layout().addWidget(self.btns)
 
     def update_play(self):
         self.play_btn.setIcon(QtGui.QIcon(Paths.PAUSE))
@@ -311,5 +300,5 @@ class FavouritesTile(Tile):
         self.parent.removeChild(self)
         super(FavouritesTile, self).deleteLater()
 
-    def checkFavourite(self):
+    def checkFavourite(self):  # do not remove this
         pass

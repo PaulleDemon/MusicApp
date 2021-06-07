@@ -128,8 +128,8 @@ class MyMusic(QtWidgets.QWidget):  # This is the music tab
         self.loadFiles()
 
 
-class MusicScrollView(ScrollView):
-    play = QtCore.pyqtSignal(object)  # path
+class MusicScrollView(ScrollView):  # Music Scroll View
+    play = QtCore.pyqtSignal(object)
     addFavourite = QtCore.pyqtSignal(object)
     addToCollection = QtCore.pyqtSignal(object, bool)
 
@@ -150,7 +150,7 @@ class MusicScrollView(ScrollView):
 
     def addTile(self, music: tinytag.TinyTag, file=""):  # adds a new tile
 
-        tile = MusicTile(music, file, (250, 250))
+        tile = MusicTile(music, file, (250, 350))
         tile.playing.connect(lambda obj: self.play.emit(obj))
         tile.addFavourite.connect(lambda obj: self.addFavourite.emit(obj))
         tile.addToCollection.connect(lambda obj, add: self.addToCollection.emit(obj, add))
@@ -164,7 +164,7 @@ class MusicScrollView(ScrollView):
         else:
             self._column += 1
 
-    def getTileProperties(self):
+    def getTileProperties(self):  # gets tile properties such as file name and property of music object
         properties = set()
         row = 0
         while row < self.grid_layout.rowCount() - 1:

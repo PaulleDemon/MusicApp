@@ -5,7 +5,7 @@ import Paths
 from Controller import Notifier
 
 
-class Settings(QtWidgets.QWidget):
+class Settings(QtWidgets.QWidget):  # settings tab has ability to add new local paths, enable/disable auto play
 
     path_added = QtCore.pyqtSignal(set)
     path_deleted = QtCore.pyqtSignal(str)
@@ -16,6 +16,8 @@ class Settings(QtWidgets.QWidget):
         super(Settings, self).__init__(*args, **kwargs)
 
         self.setLayout(QtWidgets.QVBoxLayout())
+
+        self.setObjectName("Settings")
 
         widget = QtWidgets.QWidget()
         self.v_layout = QtWidgets.QVBoxLayout(widget)
@@ -103,7 +105,9 @@ class EditableLabel(QtWidgets.QWidget):
         self.delete_path_btn = QtWidgets.QPushButton("x")
         self.delete_path_btn.setToolTip("Remove")
         self.delete_path_btn.clicked.connect(self.remove_path)
-        # self.delete_path_btn.setFixedWidth(25)
+
+        # self.select_folder_btn.setFixedWidth(30)
+        # self.delete_path_btn.setFixedWidth(30)
 
         self.layout().addWidget(self.path_edit)
         self.layout().addWidget(self.select_folder_btn)
