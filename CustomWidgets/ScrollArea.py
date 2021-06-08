@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
 
 
 class ScrollView(QtWidgets.QWidget):
@@ -8,6 +8,7 @@ class ScrollView(QtWidgets.QWidget):
         self.setObjectName("ScrollView")
 
         self.setLayout(QtWidgets.QVBoxLayout())
+        self.layout().setContentsMargins(0, 0, 0, 0)
 
         self.widget = QtWidgets.QWidget()
         self.grid_layout = QtWidgets.QGridLayout(self.widget)
@@ -25,7 +26,7 @@ class ScrollView(QtWidgets.QWidget):
     def enterEvent(self, a0) -> None:
         super(ScrollView, self).enterEvent(a0)
 
-        if not isinstance( QtWidgets.QApplication.focusWidget(), QtWidgets.QLineEdit):
+        if not isinstance(QtWidgets.QApplication.focusWidget(), QtWidgets.QLineEdit):
             self.setFocus()
 
     def getWidgets(self):
@@ -49,5 +50,13 @@ class ScrollView(QtWidgets.QWidget):
         self.grid_layout.setSpacing(50)
         self.scrollArea.setWidget(self.widget)
 
-        self._row=0
-        self._column=0
+        self._row = 0
+        self._column = 0
+
+    @property
+    def row(self):
+        return self._row
+
+    @property
+    def column(self):
+        return self._column

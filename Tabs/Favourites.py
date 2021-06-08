@@ -33,7 +33,7 @@ class FavouriteScrollView(ScrollArea.ScrollView):
 
     def addTile(self, obj: MusicTile):
 
-        tile = FavouritesTile(obj, (250, 250))
+        tile = FavouritesTile(obj, (250, 350))
         self.addWidget(tile)
 
     def addWidget(self, widget):
@@ -48,7 +48,6 @@ class FavouriteScrollView(ScrollArea.ScrollView):
     def removeWidget(self, obj):
 
         child = obj.getChildren().copy()
-        print("Children: ", [x.parent.getTitle() for x in child])
         for x in child:
             print(x.parent.getTitle())
             if isinstance(x, FavouritesTile):

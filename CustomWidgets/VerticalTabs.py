@@ -9,6 +9,8 @@ class TabWidget(QtWidgets.QWidget):
 
         self._previousTab = None
 
+        self.setObjectName("VerticalTab")
+
         self.setLayout(QtWidgets.QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
 
@@ -28,6 +30,7 @@ class TabWidget(QtWidgets.QWidget):
         self.tab_playing_holder.addLayout(currently_playing_layout)
 
         self.widgetLayout = QtWidgets.QVBoxLayout()
+        # self.widgetLayout.setContentsMargins(0, 0, 0, 0)
 
         self.layout().addWidget(self.tabWidget)
         self.layout().addLayout(self.widgetLayout)
@@ -57,9 +60,12 @@ class TabWidget(QtWidgets.QWidget):
         self._previousTab = btn
 
     def addTab(self, widget: QtWidgets.QWidget, text: str, icon=QtGui.QIcon()):
-        tab = QtWidgets.QPushButton(icon, text)
+        tab = QtWidgets.QPushButton(icon, '\t'*4+text)
+        tab.setMinimumHeight(40)
+
+        tab.setIconSize(QtCore.QSize(35, 35))
         tab.setCheckable(True)
-        tab.setMinimumHeight(30)
+
 
         self.button_group.addButton(tab)
         self.tab_Layout.addWidget(tab)

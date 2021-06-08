@@ -5,7 +5,7 @@ import Paths
 from Controller import Notifier
 
 
-class Settings(QtWidgets.QWidget):
+class Settings(QtWidgets.QWidget):  # settings tab has ability to add new local paths, enable/disable auto play
 
     path_added = QtCore.pyqtSignal(set)
     path_deleted = QtCore.pyqtSignal(str)
@@ -16,6 +16,8 @@ class Settings(QtWidgets.QWidget):
         super(Settings, self).__init__(*args, **kwargs)
 
         self.setLayout(QtWidgets.QVBoxLayout())
+
+        self.setObjectName("Settings")
 
         widget = QtWidgets.QWidget()
         self.v_layout = QtWidgets.QVBoxLayout(widget)
@@ -34,10 +36,10 @@ class Settings(QtWidgets.QWidget):
         self.auto_play_check_btn = QtWidgets.QCheckBox("Auto play")
         self.auto_play_check_btn.clicked.connect(self.autoPlay)
 
+        self.layout().addWidget(self.auto_play_check_btn)
         self.layout().addWidget(self.header)
         self.layout().addWidget(self.scroll_area)
         self.layout().addWidget(self.add_btn)
-        self.layout().addWidget(self.auto_play_check_btn)
 
         self.notify = Notifier()
 
@@ -45,7 +47,7 @@ class Settings(QtWidgets.QWidget):
 
     def addRow(self):
 
-        editable_label = EditableLabel()
+        editable_label = PathEdit()
         editable_label.path_edited.connect(self._path_added)
         editable_label.path_deleted.connect(self._path_deleted)
 
@@ -75,17 +77,17 @@ class Settings(QtWidgets.QWidget):
         return paths
 
 
-class EditableLabel(QtWidgets.QWidget):
+class PathEdit(QtWidgets.QWidget):
 
     path_edited = QtCore.pyqtSignal(str)
     path_deleted = QtCore.pyqtSignal(str)
 
     def __init__(self, *args, **kwargs):
-        super(EditableLabel, self).__init__(*args, **kwargs)
+        super(PathEdit, self).__init__(*args, **kwargs)
 
         self._valid = False
 
-        self.setObjectName("EditableLabel")
+        self.setObjectName("PathEdit")
 
         self.setLayout(QtWidgets.QHBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
@@ -103,12 +105,13 @@ class EditableLabel(QtWidgets.QWidget):
         self.delete_path_btn = QtWidgets.QPushButton("x")
         self.delete_path_btn.setToolTip("Remove")
         self.delete_path_btn.clicked.connect(self.remove_path)
-        # self.delete_path_btn.setFixedWidth(25)
+
+        # self.select_folder_btn.setFixedWidth(30)
+        # self.delete_path_btn.setFixedWidth(30)
 
         self.layout().addWidget(self.path_edit)
         self.layout().addWidget(self.select_folder_btn)
         self.layout().addWidget(self.delete_path_btn)
-
 
     def select_path(self):
         file = str(QtWidgets.QFileDialog.getExistingDirectory(self, "Select Tabs"))

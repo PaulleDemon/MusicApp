@@ -1,7 +1,7 @@
 import Paths
 import PlayList
 
-from .Slider import Slider
+from CustomWidgets.Slider import Slider
 from PyQt5 import QtWidgets, QtGui, QtCore
 from PyQt5 import QtMultimedia
 
@@ -20,6 +20,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
         self.setObjectName("CurrentlyPlaying")
         self.thumb_nail = QtWidgets.QLabel()
+        self.thumb_nail.setFixedSize(200, 450)
         self.setThumbNail(QtGui.QPixmap(Paths.UNKNOWN_MUSIC))
         self.thumb_nail.setScaledContents(True)
 
@@ -29,6 +30,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self.play_pause_btn = QtWidgets.QPushButton(objectName="PlayPause")
         self.play_pause_btn.clicked.connect(self.play_pause)
         self.play_pause_btn.setEnabled(False)
+        self.play_pause_btn.setIconSize(QtCore.QSize(30, 30))
         self.play_pause_btn.setFixedSize(50, 50)
         self._pause()
 
@@ -39,7 +41,10 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
         self.play_list = PlayList.PlayList()
 
-        self.loop_btn = QtWidgets.QPushButton("Loop")
+        self.loop_btn = QtWidgets.QPushButton(icon=QtGui.QIcon(Paths.LOOP))
+        self.loop_btn.setToolTip("Loop")
+        self.loop_btn.setIconSize(QtCore.QSize(40, 40))
+        self.loop_btn.setFixedSize(50, 50)
         self.loop_btn.setCheckable(True)
         self.loop_btn.clicked.connect(self.loop)
 
@@ -68,8 +73,9 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self.player.durationChanged.connect(self.setDuration)
 
         self.volume_indicator = ButtonLabel()
-        self.volume_indicator.setMaximumSize(50, 50)
+        self.volume_indicator.setFixedSize(50, 50)
         self.volume_indicator.setScaledContents(True)
+
         self.volume_indicator.clicked.connect(self.setMuted)
 
         self.volume_slider = Slider(QtCore.Qt.Horizontal)
@@ -79,7 +85,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
         grid_layout.addWidget(self.thumb_nail, 0, 0, 1, 3)
         grid_layout.addWidget(self.title, 1, 0, 1, 3)
-        grid_layout.addWidget(self.loop_btn, 2, 0, 1, 3)
+        grid_layout.addWidget(self.loop_btn, 2, 0, 1, 3, alignment=QtCore.Qt.AlignHCenter)
 
         grid_layout.addWidget(self.previous, 3, 0, alignment=QtCore.Qt.AlignTop)
         grid_layout.addWidget(self.play_pause_btn, 3, 1, alignment=QtCore.Qt.AlignTop)
@@ -88,7 +94,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         grid_layout.addWidget(self.progress_lbl, 5, 0, 1, 3, alignment=QtCore.Qt.AlignHCenter)
         grid_layout.setRowStretch(6, 2)
         grid_layout.addWidget(self.volume_slider, 7, 0, 1, 2, alignment=QtCore.Qt.AlignHCenter)
-        grid_layout.addWidget(self.volume_indicator, 7, 3, 1, 1, alignment=QtCore.Qt.AlignHCenter)
+        grid_layout.addWidget(self.volume_indicator, 7, 3, 1, 1, alignment=QtCore.Qt.AlignCenter)
 
         grid_layout.setRowStretch(8, 1)
 
@@ -140,8 +146,13 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
     def load_file(self):
         self.play_pause_btn.setEnabled(True)
-        self.next.setEnabled(True)
-        self.previous.setEnabled(True)
+
+        if not self.play_list.islast():
+            self.next.setEnabled(True)
+
+        if not self.play_list.isfirst():
+            self.previous.setEnabled(True)
+
         self.progress.setEnabled(True)
 
         url = QtCore.QUrl.fromLocalFile(self.current_file)
@@ -152,16 +163,21 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
     def mediaStatusChanged(self, status):
         print("Status: ", status)
-
         if status in [QtMultimedia.QMediaPlayer.InvalidMedia, QtMultimedia.QMediaPlayer.LoadingMedia,
                       QtMultimedia.QMediaPlayer.NoMedia]:
             self.progress_lbl.setText("Not Playable")
             self.play_pause_btn.setEnabled(False)
             self.progress.setEnabled(False)
+
+            if status in [QtMultimedia.QMediaPlayer.InvalidMedia, QtMultimedia.QMediaPlayer.NoMedia]:
+                self.player.setMedia(QtMultimedia.QMediaContent())
             self.pause()
 
-            if self._autoPlay:
+            if status in [QtMultimedia.QMediaPlayer.InvalidMedia, QtMultimedia.QMediaPlayer.NoMedia] \
+                    and self._autoPlay:
                 self.nextSong()
+
+            return
 
         elif status == QtMultimedia.QMediaPlayer.BufferedMedia and not self._media_ended:
             self.play_pause_btn.setEnabled(True)
@@ -170,19 +186,25 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
         if status == QtMultimedia.QMediaPlayer.EndOfMedia:
             self.pause()
-            print("LOOP: ", self._loop)
+
             if self._loop:
                 self.setMusicPosition(0)
                 self._play()
                 return
 
-            if self._autoPlay:
+            if self._autoPlay and not self.play_list.islast():
                 self.nextSong()
                 return
 
+            # self.player.setMedia(QtMultimedia.QMediaContent())
             self._media_ended = True
 
     def setProgressLabel(self, value):
+        print("SET: ", value)
+
+        if self.player.mediaStatus() in [QtMultimedia.QMediaPlayer.NoMedia, QtMultimedia.QMediaPlayer.InvalidMedia]:
+            print("RETURN")
+            return
 
         duration = QtCore.QDateTime.fromTime_t(value / 1000).toUTC().toString("hh:mm:ss")
         self.progress_lbl.setText(f"{duration}/{self._formatted_duration}")
@@ -192,10 +214,11 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self.progress.blockSignals(True)
         self.progress.setSliderPosition(value)
         self.progress.blockSignals(False)
-
+        print("Slider changed")
         self.setProgressLabel(value)
 
     def setMusicPosition(self, value):
+
         self.player.setPosition(value)
 
         if self._playing:
@@ -205,7 +228,6 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
     def setDuration(self, duration):
         self._duration = duration
-
         self._formatted_duration = QtCore.QDateTime.fromTime_t(duration / 1000).toUTC().toString("hh:mm:ss")
         self.progress.setRange(0, duration)
         self.setProgressLabel(duration)
@@ -231,28 +253,38 @@ class CurrentlyPlaying(QtWidgets.QWidget):
     def setPlaylistIndex(self, tile):
         current_index = self.play_list.getIndex(tile)
         self.play_list.setCurrentIndex(current_index)
+        if self.play_list.isfirst():
+            self.previous.setEnabled(False)
+
+        else:
+            self.previous.setEnabled(True)
+
+        if self.play_list.islast():
+            self.next.setEnabled(False)
+
+        else:
+            self.next.setEnabled(True)
 
     def nextSong(self):
 
         music_obj = self.play_list.next()
-        if music_obj:
+
+        if music_obj is not None:
             self._setCurrentMusicObj(music_obj)
+            self.play()
 
-        else:
+        if self.play_list.islast():
             self.next.setEnabled(False)
-
-        self.play()
 
     def previousSong(self):
         music_obj = self.play_list.previous()
 
-        if music_obj:
+        if music_obj is not None:
             self._setCurrentMusicObj(music_obj)
+            self.play()
 
-        else:
+        if self.play_list.isfirst():
             self.previous.setEnabled(False)
-
-        self.play()
 
     def _play(self):
         self.play_pause_btn.setIcon(QtGui.QIcon(Paths.PAUSE))
@@ -277,7 +309,6 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
         self.player.pause()
         self._playing = False
-        print("PLAYING: ", self._playing)
         self.playing.emit(self._playing)
 
 

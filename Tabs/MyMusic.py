@@ -1,32 +1,40 @@
 import os
-
 import tinytag
 
-import PlayList
+from tinytag import TinyTag
 from PyQt5 import QtWidgets, QtCore
 
 from Tiles.Music_FavouritesTile import MusicTile
 from CustomWidgets.ScrollArea import ScrollView
 from CustomWidgets.SearchScrollView import SearchScrollView
 
-from tinytag import TinyTag
 
+class MyMusic(QtWidgets.QWidget):  # This is the music tab
+    play = QtCore.pyqtSignal(object)
+    addFavourite = QtCore.pyqtSignal(object)
+    addToCollection = QtCore.pyqtSignal(object, bool)
+    playlist_added = QtCore.pyqtSignal()
 
-class MyMusic(QtWidgets.QWidget):
-
-    def __init__(self, notifier, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(MyMusic, self).__init__(*args, **kwargs)
 
-        self.notifier = notifier
+        self.dirs = set()
+        self.music_files = list()
+        self.file_path = list()
 
+        self.initUI()
+
+    def initUI(self):
         self.setLayout(QtWidgets.QVBoxLayout())
 
-        self.stack_view = QtWidgets.QStackedWidget()
+        self.setObjectName("MyMusic")
 
+        self.stack_view = QtWidgets.QStackedWidget()
         self.view = MusicScrollView()
-        self.view.play.connect(self.notifier.loadObject)
-        self.view.addFavourite.connect(self.notifier.markFavourite)
-        self.view.addToCollection.connect(self.notifier.addToCollection)
+
+        self.view.play.connect(self.play.emit)
+        self.view.addFavourite.connect(self.addFavourite.emit)
+        self.view.addToCollection.connect(self.addToCollection.emit)
 
         self.search_bar = QtWidgets.QLineEdit()
         self.search_bar.setClearButtonEnabled(True)
@@ -40,15 +48,12 @@ class MyMusic(QtWidgets.QWidget):
         self.stack_view.addWidget(self.search_display_widget)
 
         self.stack_view.setCurrentIndex(0)
+        self.stack_view.setContentsMargins(0, 0, 0, 0)
 
+        self.layout().setSpacing(20)
+        self.layout().setContentsMargins(*[10]*4)
         self.layout().addWidget(self.search_bar, alignment=QtCore.Qt.AlignRight)
         self.layout().addWidget(self.stack_view)
-
-        self.dirs = set()
-        self.music_files = list()
-        self.file_path = list()
-
-        self.playlist = PlayList.PlayList()
 
     def search(self, string):
 
@@ -65,7 +70,7 @@ class MyMusic(QtWidgets.QWidget):
         self.search_display_widget.deleteAll()
         for tile in widgets:
             if tile.getTitle().lower().startswith(string.lower()):
-                self.search_display_widget.addTile(tile)
+                self.search_display_widget.addMusicTile(tile)
 
     def pause(self):
         self.view.currently_playing_tile.pause()
@@ -106,14 +111,18 @@ class MyMusic(QtWidgets.QWidget):
         for music, file in zip(self.music_files, self.file_path):
             self.view.addTile(music, file)
 
-        for x in self.view.widgets():
-            self.playlist.add_to_playlist(x)
+        self.playlist_added.emit()
+        # for x in self.view.widgets():
+        #     self.playlist.add_to_playlist(x)
 
-    def getFilePaths(self)-> list:
+    def getFilePaths(self) -> list:
         return self.file_path
 
     def getProperties(self):
         return self.view.getTileProperties()
+
+    def playlist(self):
+        return list(self.view.widgets())
 
     def notify(self, dirs):
 
@@ -123,9 +132,8 @@ class MyMusic(QtWidgets.QWidget):
         self.loadFiles()
 
 
-class MusicScrollView(ScrollView):
-
-    play = QtCore.pyqtSignal(object)  # path
+class MusicScrollView(ScrollView):  # Music Scroll View
+    play = QtCore.pyqtSignal(object)
     addFavourite = QtCore.pyqtSignal(object)
     addToCollection = QtCore.pyqtSignal(object, bool)
 
@@ -146,7 +154,7 @@ class MusicScrollView(ScrollView):
 
     def addTile(self, music: tinytag.TinyTag, file=""):  # adds a new tile
 
-        tile = MusicTile(music, file, (250, 250))
+        tile = MusicTile(music, file, (250, 350))
         tile.playing.connect(lambda obj: self.play.emit(obj))
         tile.addFavourite.connect(lambda obj: self.addFavourite.emit(obj))
         tile.addToCollection.connect(lambda obj, add: self.addToCollection.emit(obj, add))
@@ -160,13 +168,12 @@ class MusicScrollView(ScrollView):
         else:
             self._column += 1
 
-    def getTileProperties(self):
+    def getTileProperties(self):  # gets tile properties such as file name and property of music object
         properties = set()
         row = 0
         while row < self.grid_layout.rowCount() - 1:
             column = 0
-            while column < self.grid_layout.columnCount() -1:
-
+            while column < self.grid_layout.columnCount() - 1:
                 widget = self.grid_layout.itemAtPosition(row, column).widget()
                 properties.add([widget.getFile(), widget.properties()])
 

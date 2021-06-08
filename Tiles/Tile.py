@@ -1,7 +1,7 @@
 from PyQt5 import QtWidgets, QtCore
 
 
-class Tile(QtWidgets.QWidget):
+class Tile(QtWidgets.QWidget):  # This is the base class for collection, music tiles etc
 
     def __init__(self, size: tuple = (100, 100),*args, **kwargs):
         super(Tile, self).__init__(*args, **kwargs)
@@ -10,10 +10,10 @@ class Tile(QtWidgets.QWidget):
 
         self._original_size = QtCore.QSize(*size)
         self.setMinimumSize(self._original_size)
-        self.setMaximumSize(self._original_size.width()+50, self._original_size.height()+50)
+        self.setMaximumSize(self._original_size.width()+10, self._original_size.height()+10)
 
         self.animation = QtCore.QPropertyAnimation(self, b"geometry")
-        self.animation.setDuration(150)
+        self.animation.setDuration(100)
 
     def play(self):
         raise NotImplementedError("Must implement play")
@@ -34,7 +34,6 @@ class Tile(QtWidgets.QWidget):
 
         try:
             self.btns.show()
-            self.blur_effect.setEnabled(True)
 
         except:
             raise NotImplementedError(f"btns and blur_effect must be an instance"
@@ -44,7 +43,6 @@ class Tile(QtWidgets.QWidget):
         super(Tile, self).leaveEvent(a0)
         self.animate(False)
         self.btns.hide()
-        self.blur_effect.setEnabled(False)
 
     def updateAnimation(self):
         if not self.animation.state():

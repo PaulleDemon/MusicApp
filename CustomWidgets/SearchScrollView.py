@@ -1,6 +1,6 @@
 from Tiles.Music_FavouritesTile import MusicTile
-from Tiles.SearchTile import SearchTile
-from .ScrollArea import ScrollView
+from Tiles.SearchTile import SearchTile, CollectionSearchTile
+from CustomWidgets.ScrollArea import ScrollView
 from PyQt5 import QtCore, QtGui
 
 
@@ -9,8 +9,12 @@ class SearchScrollView(ScrollView):
     addFavourite = QtCore.pyqtSignal(bool, str, QtGui.QPixmap)
     addToCollection = QtCore.pyqtSignal(bool)
 
-    def addTile(self, obj: MusicTile):
-        tile = SearchTile(obj, (250, 250))
+    def addMusicTile(self, obj: MusicTile):
+        tile = SearchTile(obj, (250, 350))
+        self.addWidget(tile)
+
+    def addCollectionTile(self, obj):
+        tile = CollectionSearchTile(obj, (250, 350))
         self.addWidget(tile)
 
     def addWidget(self, widget):
