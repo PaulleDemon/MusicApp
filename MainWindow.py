@@ -1,4 +1,4 @@
-from PyQt5 import QtWidgets, QtGui
+from PyQt5 import QtWidgets, QtGui, QtCore
 
 import Paths
 import Controller
@@ -14,8 +14,8 @@ class MainWindow(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super(MainWindow, self).__init__(*args, **kwargs)
-
-        self.showMaximized()
+        self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        self.setWindowState(QtCore.Qt.WindowMaximized)
 
         with open(r"Resources/DarkTheme.qss") as file:
             self.setStyleSheet(file.read())
@@ -26,6 +26,16 @@ class MainWindow(QtWidgets.QWidget):
         self.db_handler = DB_Operations.DBHandler()
 
         self.notifier = Controller.Notifier()
+
+        self.windowFrame = QtWidgets.QWidget(objectName="WindowFrame")
+        self.windowFrame.setLayout(QtWidgets.QHBoxLayout())
+        self.windowFrame.setFixedHeight(30)
+        self.windowFrame.layout().setSpacing(20)
+
+        self.close_btn = QtWidgets.QPushButton(clicked=self.close, objectName="CloseButton")
+        self.close_btn.setFixedSize(20, 20)
+        self.max_min = QtWidgets.QPushButton(icon=QtGui.QIcon(Paths.MINIMIZE), clicked=self.showMinimized)
+        self.max_min.setFixedSize(20, 20)
 
         self.tabWidget = TabWidget()
 
@@ -49,7 +59,13 @@ class MainWindow(QtWidgets.QWidget):
         self.tabWidget.addTab(self.musicCollections, "Collections", QtGui.QIcon(Paths.LIBRARY))
         self.tabWidget.addTab(self.settings, "Settings", QtGui.QIcon(Paths.SETTINGS))
         self.tabWidget.addTab(self.statistics, "Statistics", QtGui.QIcon(Paths.STATISTICS))
+        # QtWidgets.QHBoxLayout().insertWidget()
 
+        self.windowFrame.layout().insertWidget(1, self.max_min, alignment=QtCore.Qt.AlignRight)
+        self.windowFrame.layout().insertWidget(2, self.close_btn, alignment=QtCore.Qt.AlignRight)
+        self.windowFrame.layout().setStretch(0, 1)
+
+        self.layout().addWidget(self.windowFrame)
         self.layout().addWidget(self.tabWidget)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:  # todo: save files before closing

@@ -12,6 +12,8 @@ class MyCollection(QtWidgets.QWidget):  # collection tab add Collection tile her
     def __init__(self, *args, **kwargs):
         super(MyCollection, self).__init__(*args, **kwargs)
 
+        self.setObjectName("Collection")
+
         self._current_playing_collection = None
         self._current_visible_item = None
 

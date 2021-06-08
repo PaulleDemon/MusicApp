@@ -7,6 +7,7 @@ from CustomWidgets.ScrollArea import ScrollView
 from CustomWidgets.FadeLabel import FadeLabel
 
 
+#fixme: unable to close the collection tile properly
 class CollectionTile(Tile):  # collection tile
 
     playing = QtCore.pyqtSignal(object)
@@ -49,6 +50,7 @@ class CollectionTile(Tile):  # collection tile
 
         collection_label = EditableLabel(self._collection_name, alignment=QtCore.Qt.AlignCenter)
         collection_label.textChanged.connect(self.setCollectionName)
+        collection_label.setMinimumHeight(20)
 
         self.btns.layout().addWidget(delete_collection_btn)
         self.btns.layout().addWidget(self.play_btn)
@@ -125,7 +127,6 @@ class CollectionTile(Tile):  # collection tile
 
     def play_pause(self):
         self._playing = not self._playing
-        print("PLAYING...", self._playing)
         if self._playing:
             self.play()
 
@@ -174,8 +175,10 @@ class CollectionTile(Tile):  # collection tile
 
     def deleteLater(self) -> None:
 
-        for x in self._collection_children:
-            x.clicked(self.sender())
+        collection_cpy = self._collection_children.copy()
+
+        for x in collection_cpy:
+            self.removeFromCollection(x)
 
         super(CollectionTile, self).deleteLater()
 
@@ -229,16 +232,10 @@ class CollectionInnerTile(Tile):  # This is tile inside the Collections
 
         self.btns.hide()
 
-        self.blur_effect = QtWidgets.QGraphicsBlurEffect()
-        self.blur_effect.setBlurRadius(2)
-
         self.shadow_effect = QtWidgets.QGraphicsDropShadowEffect()
         self.shadow_effect.setBlurRadius(5)
         self.shadow_effect.setOffset(3, 3)
         self.btns.setGraphicsEffect(self.shadow_effect)
-
-        self.thumb_nail.setGraphicsEffect(self.blur_effect)
-        self.blur_effect.setEnabled(False)
 
         self.layout().addWidget(self.thumb_nail)
         self.layout().addWidget(self.title)
@@ -276,6 +273,8 @@ class CollectionInnerTile(Tile):  # This is tile inside the Collections
             self.parent.clicked(btn)
 
     def deleteLater(self) -> None:
+        # self.parent.clicked(self.delete_btn)
+        self.parent._collection = True
         self.parent.removeChild(self)
         super(CollectionInnerTile, self).deleteLater()
 

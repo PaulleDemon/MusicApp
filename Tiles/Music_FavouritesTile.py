@@ -74,7 +74,7 @@ class MusicTile(Tile):  # Music Tile
 
         self._playing = False
         self._favourite = False
-        self._collection = None
+        self._collection = False
 
         self.play_btn = QtWidgets.QPushButton(objectName="PlayButton")
         self.play_btn.setToolTip("Play")
@@ -209,8 +209,9 @@ class MusicTile(Tile):  # Music Tile
         elif obj_name == "Collection":
 
             self._collection = not self._collection
+            print("Collection: ", self._collection)
             self.addToCollection.emit(self, self._collection)
-            print("COLLECTIOON: ", self._collection)
+
             if self._collection:
                 self.collection.setIcon(QtGui.QIcon(Paths.COLLECTION_GRAY))
 

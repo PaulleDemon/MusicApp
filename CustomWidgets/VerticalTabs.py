@@ -30,6 +30,7 @@ class TabWidget(QtWidgets.QWidget):
         self.tab_playing_holder.addLayout(currently_playing_layout)
 
         self.widgetLayout = QtWidgets.QVBoxLayout()
+        # self.widgetLayout.setContentsMargins(0, 0, 0, 0)
 
         self.layout().addWidget(self.tabWidget)
         self.layout().addLayout(self.widgetLayout)

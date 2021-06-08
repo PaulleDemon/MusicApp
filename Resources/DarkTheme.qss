@@ -16,13 +16,22 @@ QPushButton:checked{
     background-color: #060648;
 }
 
+QCheckBox {
+    spacing: 5px;
+}
+
+QCheckBox::indicator {
+    width: 13px;
+    height: 13px;
+}
+
 QLineEdit{
-    color: #ffffff;
+    color: #9C99A9;
     border-radius: 2px;
     border: 1px solid #ffffff;
     height: 30px;
+    background-color: red;
 }
-
 
 #VerticalTab QWidget{
     background-color: #1B1F38;
@@ -58,27 +67,79 @@ QLineEdit{
     background-color: #6416cc;
 }
 
-#EditableLabel QLineEdit[valid="false"]{
-border: 2px solid red;
+#Settings #PathEdit QLineEdit{
+    color: #000000;
+    background-color: #ffffff;
 }
 
-#EditableLabel QPushButton{
-    background-color: #290757;
+#PathEdit QLineEdit[valid="false"]{
+    border: 2px solid red;
+}
+
+#Settings #PathEdit QPushButton{
+    background-color: #5615ad;
     width: 50px;
 }
 
-#EditableLabel QPushButton: hover{
+#Settings #PathEdit QPushButton:hover{
     background-color: #290757;
+}
+
+#Settings QCheckBox{
+    color: white;
+    background-color: transparent;
+    height: 30px;
+    width: 30px;
+    font-size: 14px;
+}
+
+#Settings QCheckBox::indicator {
+    width: 20px;
+    height: 20px;
+}
+
+#Settings QCheckBox::indicator:checked {
+     image: url('Resources/Icons/CheckBoxTicked.png');
+}
+
+#Settings QCheckBox::indicator:unchecked {
+     image: url('Resources/Icons/CheckBoxUnticked.png');
+}
+
+#MyMusic>QLineEdit, #Collection>QLineEdit{
+    color: #000000;
+    background-color: #ffffff;
+}
+
+#WindowFrame QPushButton{
+    color: #ffffff;
+    border: none;
+}
+
+#WindowFrame QPushButton:hover{
+    background-color: rgba(164, 171, 166, 120);
+}
+
+#WindowFrame #CloseButton{
+    border: none;
+    background-color: none;
+    image: url('Resources/Icons/CloseButton.png');
+}
+
+#WindowFrame #CloseButton:hover{
+    image: url('Resources/Icons/CloseButtonHovered.png');
 }
 
 #Tile{
     border-radius: 2px;
     background-color: red;
+    border: 2px solid red;
 }
 
-#Tile QWidget{
+#MyMusic #Tile>QWidget{
     background-color: transparent;
-    border-radius: 2px;
+    border-radius: 5px;
+    border: 2px solid red;
 }
 
 #CurrentlyPlaying QPushButton{
@@ -86,16 +147,38 @@ border: 2px solid red;
 }
 
 #VerticalTab QSlider::groove:horizontal {
-    border: 1px solid #999999;
-    height: 8px; /* the groove expands to the size of the slider by default. by giving it a height, it has a fixed size */
-    background: qlineargradient(x1:0, y1:0, x2:0, y2:1, stop:0 #B1B1B1, stop:1 #c4c4c4);
-    margin: 2px 0;
+	background-color: black;
+	border: 0px solid #424242;
+	height: 8px;
+	border-radius: 5px;
 }
 
 #VerticalTab QSlider::handle:horizontal {
-    background: qlineargradient(x1:0, y1:0, x2:1, y2:1, stop:0 #b4b4b4, stop:1 #8f8f8f);
-    border: 1px solid #5c5c5c;
-    width: 18px;
-    margin: -2px 0; /* handle is placed by default on the contents rect of the groove. Expand outside the groove */
-    border-radius: 3px;
+	background-color: #ffffff;
+	border: 2px solid #707070;
+	width: 16px;
+	height: 20px;
+	line-height: 20px;
+	margin-top: -7px;
+	margin-bottom: -7px;
+	border-radius: 9px;
+}
+
+#VerticalTab QSlider::handle:horizontal:disabled {
+	background-color: #9c9c9c;
+}
+
+
+/*#VerticalTab QSlider::handle:horizontal:hover {
+	border-radius: 10px;
+}*/
+
+#VerticalTab QSlider::add-page:horizontal {
+    border-radius: 2px;
+    background: white;
+}
+
+#VerticalTab  QSlider::sub-page:horizontal {
+    border-radius: 2px;
+    background: #0DB72F;
 }

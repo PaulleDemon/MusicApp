@@ -73,7 +73,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self.player.durationChanged.connect(self.setDuration)
 
         self.volume_indicator = ButtonLabel()
-        self.volume_indicator.setFixedHeight(100)
+        self.volume_indicator.setFixedSize(50, 50)
         self.volume_indicator.setScaledContents(True)
 
         self.volume_indicator.clicked.connect(self.setMuted)

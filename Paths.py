@@ -1,5 +1,8 @@
 # Contains paths to all the icons
 
+MAXIMIZE = r"Resources/Icons/Maximize.png"
+MINIMIZE = r"Resources/Icons/MinimizeMinus.png"
+
 MUSIC = r"Resources/Icons/Music.png"
 STATISTICS = r"Resources/Icons/statistics.png"
 SETTINGS = r"Resources/Icons/Settings.png"

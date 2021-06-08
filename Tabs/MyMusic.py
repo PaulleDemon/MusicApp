@@ -27,8 +27,9 @@ class MyMusic(QtWidgets.QWidget):  # This is the music tab
     def initUI(self):
         self.setLayout(QtWidgets.QVBoxLayout())
 
-        self.stack_view = QtWidgets.QStackedWidget()
+        self.setObjectName("MyMusic")
 
+        self.stack_view = QtWidgets.QStackedWidget()
         self.view = MusicScrollView()
 
         self.view.play.connect(self.play.emit)
@@ -47,7 +48,10 @@ class MyMusic(QtWidgets.QWidget):  # This is the music tab
         self.stack_view.addWidget(self.search_display_widget)
 
         self.stack_view.setCurrentIndex(0)
+        self.stack_view.setContentsMargins(0, 0, 0, 0)
 
+        self.layout().setSpacing(20)
+        self.layout().setContentsMargins(*[10]*4)
         self.layout().addWidget(self.search_bar, alignment=QtCore.Qt.AlignRight)
         self.layout().addWidget(self.stack_view)
 

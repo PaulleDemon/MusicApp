@@ -10,10 +10,10 @@ class Tile(QtWidgets.QWidget):  # This is the base class for collection, music t
 
         self._original_size = QtCore.QSize(*size)
         self.setMinimumSize(self._original_size)
-        self.setMaximumSize(self._original_size.width()+50, self._original_size.height()+50)
+        self.setMaximumSize(self._original_size.width()+10, self._original_size.height()+10)
 
         self.animation = QtCore.QPropertyAnimation(self, b"geometry")
-        self.animation.setDuration(150)
+        self.animation.setDuration(100)
 
     def play(self):
         raise NotImplementedError("Must implement play")

@@ -8,6 +8,7 @@ class ScrollView(QtWidgets.QWidget):
         self.setObjectName("ScrollView")
 
         self.setLayout(QtWidgets.QVBoxLayout())
+        self.layout().setContentsMargins(0, 0, 0, 0)
 
         self.widget = QtWidgets.QWidget()
         self.grid_layout = QtWidgets.QGridLayout(self.widget)
