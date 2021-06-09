@@ -139,6 +139,7 @@ class MusicTile(Tile):  # Music Tile
         try:
             self._children.remove(child)
         except KeyError:
+            print("ERROR!!!!")
             pass
 
     def getChildren(self):
@@ -177,6 +178,17 @@ class MusicTile(Tile):  # Music Tile
         self.play_btn.setToolTip("Pause")
         self._playing = True
         self.update_children()
+
+    def updateCollection(self):
+        self._collection = not self._collection
+        print("Collection: ", self._collection)
+
+        if self._collection:
+            self.collection.setIcon(QtGui.QIcon(Paths.COLLECTION_GRAY))
+
+        else:
+            self.collection.setIcon(QtGui.QIcon(Paths.COLLECTION))
+            self._collection_name = None
 
     def clicked(self, btn: QtWidgets.QPushButton = None):
         obj_name = btn.objectName()

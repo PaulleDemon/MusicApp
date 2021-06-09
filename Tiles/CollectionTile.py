@@ -75,13 +75,14 @@ class CollectionTile(Tile):  # collection tile
     def removeFromCollection(self, obj):
 
         widgets = self.scroll_view.getWidgets()
-        print(widgets)
+        print("DELETING: ", obj)
         for x in widgets:
             if x.musicObj == obj:
                 x.deleteLater()
                 break
 
         self._collection_children.remove(obj)
+        print("LEFT: ", self._collection_children)
         self._play_list.remove(obj)
         self.reload()
 
@@ -175,11 +176,13 @@ class CollectionTile(Tile):  # collection tile
 
     def deleteLater(self) -> None:
 
-        collection_cpy = self._collection_children.copy()
+        widgets = self.scroll_view.getWidgets()
 
-        for x in collection_cpy:
-            self.removeFromCollection(x)
+        for x in widgets:
+            print("widget: ", x)
+            x.delete()
 
+        print("PASSED")
         super(CollectionTile, self).deleteLater()
 
     def clicked(self, btn: QtWidgets.QPushButton = None):
@@ -270,13 +273,16 @@ class CollectionInnerTile(Tile):  # This is tile inside the Collections
                 self.play()
 
         elif btn == self.delete_btn:
-            self.parent.clicked(btn)
+            self.deleteTile()
 
-    def deleteLater(self) -> None:
-        # self.parent.clicked(self.delete_btn)
-        self.parent._collection = True
+    def deleteTile(self):
+        print("NO....")
+        self.parent.clicked(self.delete_btn)
         self.parent.removeChild(self)
-        super(CollectionInnerTile, self).deleteLater()
+
+    def delete(self):
+        self.parent.updateCollection()
+        self.parent.removeChild(self)
 
     def checkFavourite(self):  # necessary just use this
         pass
