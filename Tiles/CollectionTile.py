@@ -7,7 +7,6 @@ from CustomWidgets.ScrollArea import ScrollView
 from CustomWidgets.FadeLabel import FadeLabel
 
 
-#fixme: unable to close the collection tile properly
 class CollectionTile(Tile):  # collection tile
 
     playing = QtCore.pyqtSignal(object)
@@ -17,8 +16,6 @@ class CollectionTile(Tile):  # collection tile
 
     def __init__(self, collection_name, *args, **kwargs):
         super(CollectionTile, self).__init__(*args, **kwargs)
-
-        self.setStyleSheet('background-color: red;')
 
         self._children = set()
         self._collection_name = collection_name
@@ -34,6 +31,8 @@ class CollectionTile(Tile):  # collection tile
     def initUI(self):
         self.setLayout(QtWidgets.QVBoxLayout())
 
+        self.setObjectName("CollectionTile")
+
         self.thumb_nail = FadeLabel()
         self.thumb_nail.setScaledContents(True)
         self.thumb_nail.setLayout(QtWidgets.QVBoxLayout())
@@ -41,11 +40,11 @@ class CollectionTile(Tile):  # collection tile
         self.scroll_view = CollectionTileScrollView()
         self.scroll_view.closed.connect(self.closed.emit)
 
-        self.btns = QtWidgets.QWidget()
+        self.btns = QtWidgets.QWidget(objectName="ButtonGroup")
         self.btns.setLayout(QtWidgets.QHBoxLayout())
         self.btns.hide()
 
-        delete_collection_btn = QtWidgets.QPushButton("Collection", clicked=self.deleteLater)
+        delete_collection_btn = QtWidgets.QPushButton(icon=QtGui.QIcon(Paths.DELETE_BIN), clicked=self.deleteLater)
         self.play_btn = QtWidgets.QPushButton(icon=QtGui.QIcon(Paths.PLAY), clicked=self.play_pause)
 
         collection_label = EditableLabel(self._collection_name, alignment=QtCore.Qt.AlignCenter)
@@ -55,8 +54,9 @@ class CollectionTile(Tile):  # collection tile
         self.btns.layout().addWidget(delete_collection_btn)
         self.btns.layout().addWidget(self.play_btn)
 
-        self.thumb_nail.layout().addWidget(self.btns, alignment=QtCore.Qt.AlignBottom)
+        # self.thumb_nail.layout().addWidget(self.btns, alignment=QtCore.Qt.AlignBottom)
         self.layout().addWidget(self.thumb_nail)
+        self.layout().addWidget(self.btns)
         self.layout().addWidget(collection_label)
 
     def setThumbNail(self, thumb_nail):
@@ -75,14 +75,12 @@ class CollectionTile(Tile):  # collection tile
     def removeFromCollection(self, obj):
 
         widgets = self.scroll_view.getWidgets()
-        print("DELETING: ", obj)
         for x in widgets:
             if x.musicObj == obj:
                 x.deleteLater()
                 break
 
         self._collection_children.remove(obj)
-        print("LEFT: ", self._collection_children)
         self._play_list.remove(obj)
         self.reload()
 
@@ -90,7 +88,6 @@ class CollectionTile(Tile):  # collection tile
 
         if self.timer:
             self.timer.stop()
-            # self.timer.deleteLater()
 
         if not self._playing and self.isVisible():
 
@@ -152,7 +149,6 @@ class CollectionTile(Tile):  # collection tile
         super(CollectionTile, self).mousePressEvent(event)
 
     def showEvent(self, event: QtGui.QShowEvent) -> None:
-        print("Showing")
         self.updateThumbNail()
         super(CollectionTile, self).showEvent(event)
 
@@ -179,10 +175,8 @@ class CollectionTile(Tile):  # collection tile
         widgets = self.scroll_view.getWidgets()
 
         for x in widgets:
-            print("widget: ", x)
             x.delete()
 
-        print("PASSED")
         super(CollectionTile, self).deleteLater()
 
     def clicked(self, btn: QtWidgets.QPushButton = None):
@@ -218,7 +212,7 @@ class CollectionInnerTile(Tile):  # This is tile inside the Collections
 
         self.delete_btn = QtWidgets.QPushButton(objectName="Collection")
         self.delete_btn.setToolTip("remove from Collection")
-        self.delete_btn.setIcon(QtGui.QIcon(Paths.DELETE_BIN))  # todo: add a delete icon
+        self.delete_btn.setIcon(QtGui.QIcon(Paths.DELETE_BIN))
 
         if self.parent.isPlaying():
             self.update_play()
@@ -276,7 +270,6 @@ class CollectionInnerTile(Tile):  # This is tile inside the Collections
             self.deleteTile()
 
     def deleteTile(self):
-        print("NO....")
         self.parent.clicked(self.delete_btn)
         self.parent.removeChild(self)
 

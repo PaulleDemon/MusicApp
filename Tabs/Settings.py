@@ -51,6 +51,9 @@ class Settings(QtWidgets.QWidget):  # settings tab has ability to add new local 
         editable_label.path_edited.connect(self._path_added)
         editable_label.path_deleted.connect(self._path_deleted)
 
+        editable_label.path_edit.setText(
+            r"C:\Users\Paul\Desktop\all folders\english albumsong\english songs")  # todo: remove this
+
         self.v_layout.insertWidget(self.v_layout.count() - 1, editable_label, alignment=QtCore.Qt.AlignTop)
 
         if self.scroll_area.verticalScrollBar().isVisible():

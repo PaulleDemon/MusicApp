@@ -65,9 +65,10 @@ class MusicTile(Tile):  # Music Tile
         self.thumb_nail.setLayout(QtWidgets.QVBoxLayout())
 
         self.music_title = QtWidgets.QLabel(text=title)
+        self.music_title.setMaximumHeight(30)
         self.setToolTip(title)
 
-        self.btns = QtWidgets.QWidget()
+        self.btns = QtWidgets.QWidget(objectName="ButtonGroup")
         self.btns.setLayout(QtWidgets.QHBoxLayout())
 
         btn_grp = QtWidgets.QButtonGroup(self)
@@ -79,14 +80,17 @@ class MusicTile(Tile):  # Music Tile
         self.play_btn = QtWidgets.QPushButton(objectName="PlayButton")
         self.play_btn.setToolTip("Play")
         self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
+        self.play_btn.setFixedSize(50, 50)
 
         self.favourite = QtWidgets.QPushButton(objectName="Favourite")
         self.favourite.setToolTip("Mark Favourite")
         self.favourite.setIcon(QtGui.QIcon(Paths.STAR_UNFILLED))
+        self.favourite.setFixedSize(50, 50)
 
         self.collection = QtWidgets.QPushButton(objectName="Collection")
         self.collection.setToolTip("Add to Collection")
         self.collection.setIcon(QtGui.QIcon(Paths.COLLECTION))
+        self.collection.setFixedSize(50, 50)
 
         btn_grp.addButton(self.play_btn)
         btn_grp.addButton(self.favourite)
@@ -102,6 +106,12 @@ class MusicTile(Tile):  # Music Tile
         self.shadow_effect = QtWidgets.QGraphicsDropShadowEffect()
         self.shadow_effect.setBlurRadius(5)
         self.shadow_effect.setOffset(3, 3)
+        self.shadow_effect.setColor(QtGui.QColor(255, 255, 255))
+
+        self.play_btn.setGraphicsEffect(self.shadow_effect)
+        self.favourite.setGraphicsEffect(self.shadow_effect)
+        self.collection.setGraphicsEffect(self.shadow_effect)
+
         self.btns.setGraphicsEffect(self.shadow_effect)
 
         self.thumb_nail.layout().addWidget(self.btns, alignment=QtCore.Qt.AlignBottom)
@@ -181,7 +191,6 @@ class MusicTile(Tile):  # Music Tile
 
     def updateCollection(self):
         self._collection = not self._collection
-        print("Collection: ", self._collection)
 
         if self._collection:
             self.collection.setIcon(QtGui.QIcon(Paths.COLLECTION_GRAY))
@@ -221,7 +230,6 @@ class MusicTile(Tile):  # Music Tile
         elif obj_name == "Collection":
 
             self._collection = not self._collection
-            print("Collection: ", self._collection)
             self.addToCollection.emit(self, self._collection)
 
             if self._collection:
@@ -247,6 +255,7 @@ class FavouritesTile(Tile):  # Favourites tile.
         self.thumb_nail.setLayout(QtWidgets.QVBoxLayout())
 
         self.title = QtWidgets.QLabel(self.parent.getTitle())
+        self.title.setMaximumHeight(30)
 
         btns = QtWidgets.QButtonGroup(self)
 

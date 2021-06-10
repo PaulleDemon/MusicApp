@@ -9,6 +9,7 @@ class SearchTile(Tile):  # Music search tile
     def __init__(self, parent: MusicTile, *args, **kwargs):
         super(SearchTile, self).__init__(*args, **kwargs)
 
+        self.setObjectName("Tile")
         self.setLayout(QtWidgets.QVBoxLayout())
         self.parent = parent
         self.parent.addChild(self)
@@ -19,13 +20,16 @@ class SearchTile(Tile):  # Music search tile
         self.thumb_nail.setLayout(QtWidgets.QVBoxLayout())
 
         self.title = QtWidgets.QLabel(self.parent.getTitle())
+        self.title.setMaximumHeight(30)
 
         btns = QtWidgets.QButtonGroup(self)
 
         self.play_btn = QtWidgets.QPushButton(objectName="PlayButton")
+        self.play_btn.setFixedSize(50, 50)
         self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
 
         self.favourite = QtWidgets.QPushButton(objectName="Favourite")
+        self.favourite.setFixedSize(50, 50)
         self.checkFavourite()
 
         if self.parent.isPlaying():
@@ -45,6 +49,10 @@ class SearchTile(Tile):  # Music search tile
         self.shadow_effect = QtWidgets.QGraphicsDropShadowEffect()
         self.shadow_effect.setBlurRadius(5)
         self.shadow_effect.setOffset(3, 3)
+        self.shadow_effect.setColor(QtGui.QColor(255, 255, 255))
+
+        self.play_btn.setGraphicsEffect(self.shadow_effect)
+        self.favourite.setGraphicsEffect(self.shadow_effect)
         self.btns.setGraphicsEffect(self.shadow_effect)
 
         self.thumb_nail.layout().addWidget(self.btns, alignment=QtCore.Qt.AlignBottom)
@@ -102,6 +110,7 @@ class CollectionSearchTile(Tile): # Collection Search Tile
     def __init__(self, parent, *args, **kwargs):
         super(CollectionSearchTile, self).__init__(*args, **kwargs)
 
+        self.setObjectName("Tile")
         self.setLayout(QtWidgets.QVBoxLayout())
         self.parent = parent
         self.parent.addChild(self)
@@ -112,6 +121,7 @@ class CollectionSearchTile(Tile): # Collection Search Tile
         self.thumb_nail.setLayout(QtWidgets.QVBoxLayout())
 
         self.title = QtWidgets.QLabel(self.parent.getCollectionName())
+        self.title.setMaximumHeight(30)
 
         btns = QtWidgets.QButtonGroup(self)
 
@@ -124,7 +134,7 @@ class CollectionSearchTile(Tile): # Collection Search Tile
         btns.addButton(self.play_btn)
         btns.buttonClicked.connect(self.clicked)
 
-        self.btns = QtWidgets.QWidget()
+        self.btns = QtWidgets.QWidget(objectName="ButtonGroup")
         self.btns.setLayout(QtWidgets.QHBoxLayout())
         self.btns.hide()
 
@@ -133,6 +143,9 @@ class CollectionSearchTile(Tile): # Collection Search Tile
         self.shadow_effect = QtWidgets.QGraphicsDropShadowEffect()
         self.shadow_effect.setBlurRadius(5)
         self.shadow_effect.setOffset(3, 3)
+        self.shadow_effect.setColor(QtGui.QColor(255, 255, 255))
+
+        self.play_btn.setGraphicsEffect(self.shadow_effect)
         self.btns.setGraphicsEffect(self.shadow_effect)
 
         self.thumb_nail.layout().addWidget(self.btns, alignment=QtCore.Qt.AlignBottom)

@@ -10,11 +10,11 @@ class SearchScrollView(ScrollView):
     addToCollection = QtCore.pyqtSignal(bool)
 
     def addMusicTile(self, obj: MusicTile):
-        tile = SearchTile(obj, (250, 350))
+        tile = SearchTile(obj, (250, 350), objectName="Tile")
         self.addWidget(tile)
 
     def addCollectionTile(self, obj):
-        tile = CollectionSearchTile(obj, (250, 350))
+        tile = CollectionSearchTile(obj, (250, 350), objectName="Tile")
         self.addWidget(tile)
 
     def addWidget(self, widget):

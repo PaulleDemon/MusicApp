@@ -33,6 +33,41 @@ QLineEdit{
     background-color: red;
 }
 
+
+QScrollArea QScrollBar:vertical{
+     width: 25px;
+     margin: 15px 3px 15px 3px;
+     border-radius: 4px;
+ }
+
+QScrollBar::add-page:vertical, QScrollBar::sub-page:vertical {
+    background: none;
+}
+
+ QScrollArea QScrollBar::handle:vertical{
+     background-color: rgba(227, 222, 222, 120);         /* #605F5F; */
+     min-height: 5px;
+ }
+
+QScrollBar::add-line:vertical {
+      border: none;
+      background: none;
+      width: 0px;
+}
+
+QScrollBar::sub-line:vertical {
+      border: none;
+      background: none;
+      width: 0px;
+}
+
+QToolTip{
+    color: #ffffff;
+    background-color: #471f3a;
+    border-radius: 2px;
+    border: 0.5px solid #ffffff;
+}
+
 #VerticalTab QWidget{
     background-color: #1B1F38;
 }
@@ -130,17 +165,26 @@ QLineEdit{
     image: url('Resources/Icons/CloseButtonHovered.png');
 }
 
-#Tile{
-    border-radius: 2px;
-    background-color: red;
+#Tile QWidget{
+    border-radius: 5px;
+    background-color: transparent;
     border: 2px solid red;
 }
 
-#MyMusic #Tile>QWidget{
+#MusicTile #ButtonGroup, #CollectionTile #ButtonGroup, #Tile #ButtonGroup{
+    background: transparent;
+}
+
+#MusicTile #ButtonGroup>QPushButton, #CollectionTile #ButtonGroup>QPushButton, #Tile #ButtonGroup>QPushButton{
+    background: rgba(32, 33, 43, 180);
+    border-radius: 25px;
+}
+
+/*#MyMusic #Tile>QWidget{
     background-color: transparent;
     border-radius: 5px;
     border: 2px solid red;
-}
+}*/
 
 #CurrentlyPlaying QPushButton{
     border-radius: 25;
