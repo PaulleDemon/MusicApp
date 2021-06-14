@@ -9,7 +9,7 @@ class SearchTile(Tile):  # Music search tile
     def __init__(self, parent: MusicTile, *args, **kwargs):
         super(SearchTile, self).__init__(*args, **kwargs)
 
-        self.setObjectName("Tile")
+        self.setObjectName("SearchTile")
         self.setLayout(QtWidgets.QVBoxLayout())
         self.parent = parent
         self.parent.addChild(self)
@@ -39,7 +39,7 @@ class SearchTile(Tile):  # Music search tile
         btns.addButton(self.favourite)
         btns.buttonClicked.connect(self.clicked)
 
-        self.btns = QtWidgets.QWidget()
+        self.btns = QtWidgets.QWidget(objectName="ButtonGroup")
         self.btns.setLayout(QtWidgets.QHBoxLayout())
         self.btns.hide()
 
@@ -110,7 +110,7 @@ class CollectionSearchTile(Tile): # Collection Search Tile
     def __init__(self, parent, *args, **kwargs):
         super(CollectionSearchTile, self).__init__(*args, **kwargs)
 
-        self.setObjectName("Tile")
+        self.setObjectName("SearchTile")
         self.setLayout(QtWidgets.QVBoxLayout())
         self.parent = parent
         self.parent.addChild(self)

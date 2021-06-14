@@ -33,7 +33,6 @@ QLineEdit{
     background-color: red;
 }
 
-
 QScrollArea QScrollBar:vertical{
      width: 25px;
      margin: 15px 3px 15px 3px;
@@ -171,11 +170,20 @@ QToolTip{
     border: 2px solid red;
 }
 
-#MusicTile #ButtonGroup, #CollectionTile #ButtonGroup, #Tile #ButtonGroup{
+#Tile #ButtonGroup{
+    border-radius: 5px;
+    background-color: transparent;
+    border: 2px solid red;
+}
+
+#MusicTile #ButtonGroup, #CollectionTile #ButtonGroup, #Tile #ButtonGroup, #CollectionInnerTile #ButtonGroup,
+    #Favourite #ButtonGroup, #SearchTile #ButtonGroup{
     background: transparent;
 }
 
-#MusicTile #ButtonGroup>QPushButton, #CollectionTile #ButtonGroup>QPushButton, #Tile #ButtonGroup>QPushButton{
+#MusicTile #ButtonGroup>QPushButton, #CollectionTile #ButtonGroup>QPushButton,
+   #CollectionInnerTile #ButtonGroup>QPushButton, #Favourite #ButtonGroup>QPushButton,
+   #SearchTile #ButtonGroup>QPushButton{
     background: rgba(32, 33, 43, 180);
     border-radius: 25px;
 }
@@ -225,4 +233,25 @@ QToolTip{
 #VerticalTab  QSlider::sub-page:horizontal {
     border-radius: 2px;
     background: #0DB72F;
+}
+
+QDialog{
+    border: 1px solid #ffffff;
+    background: #2f2f36;
+}
+
+QDialog QLabel{
+    color: #ff141c;
+    background:  transparent;
+}
+
+QDialog QLineEdit{
+    color: #ffffff;
+    background:  #2f2f36;
+}
+
+
+QDialog QListWidget{
+    color: #ffffff;
+    background:  #2f2f36;
 }
