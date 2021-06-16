@@ -32,8 +32,6 @@ class PlayList:
             self._current -= 1
             return None
 
-        print("current: ", self._current, len(PlayList._playList), PlayList._playList)
-
         return PlayList._playList[self._current]
 
     def previous(self):  # returns the previous song

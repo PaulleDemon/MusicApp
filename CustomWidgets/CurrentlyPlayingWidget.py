@@ -162,7 +162,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self._media_ended = False
 
     def mediaStatusChanged(self, status):
-        print("Status: ", status)
+
         if status in [QtMultimedia.QMediaPlayer.InvalidMedia, QtMultimedia.QMediaPlayer.LoadingMedia,
                       QtMultimedia.QMediaPlayer.NoMedia]:
             self.progress_lbl.setText("Not Playable")
@@ -200,10 +200,8 @@ class CurrentlyPlaying(QtWidgets.QWidget):
             self._media_ended = True
 
     def setProgressLabel(self, value):
-        print("SET: ", value)
 
         if self.player.mediaStatus() in [QtMultimedia.QMediaPlayer.NoMedia, QtMultimedia.QMediaPlayer.InvalidMedia]:
-            print("RETURN")
             return
 
         duration = QtCore.QDateTime.fromTime_t(value / 1000).toUTC().toString("hh:mm:ss")
@@ -214,7 +212,6 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self.progress.blockSignals(True)
         self.progress.setSliderPosition(value)
         self.progress.blockSignals(False)
-        print("Slider changed")
         self.setProgressLabel(value)
 
     def setMusicPosition(self, value):
