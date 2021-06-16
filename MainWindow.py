@@ -1,12 +1,15 @@
+import os.path
+
 from PyQt5 import QtWidgets, QtGui, QtCore
 
 import Paths
 import Controller
 import DB_Operations
+import json
 
 from CustomWidgets.VerticalTabs import TabWidget
 from CustomWidgets.ScrollArea import ScrollView
-from Tabs import Settings, MyMusic, Favourites, MyCollections
+from Tabs import Settings, MyMusic, Favourites, MyCollections, Statistics
 
 
 class MainWindow(QtWidgets.QWidget):
@@ -43,7 +46,7 @@ class MainWindow(QtWidgets.QWidget):
         self.favourites = Favourites.Favourite()
         self.musicCollections = MyCollections.MyCollection()
         self.settings = Settings.Settings()
-        self.statistics = ScrollView()
+        self.statistics = Statistics.Statics()
 
         self.notifier.setPlayer(self.tabWidget.player_object())
         self.notifier.setMusicTab(self.myMusic)
@@ -68,15 +71,34 @@ class MainWindow(QtWidgets.QWidget):
         self.layout().addWidget(self.windowFrame)
         self.layout().addWidget(self.tabWidget)
 
+        self.deSerialize()
+
+    def serialize(self):
+        paths, checked = self.settings.serialize()
+
+        self.db_handler.insertToPaths(paths)
+
+        with open(r"UserResources\save.json", 'w') as j_obj:
+            json.dump(checked, j_obj)
+
+        print("Paths: ", paths)
+        print("Checked: ", checked)
+
+    def deSerialize(self):
+
+        paths = self.db_handler.getPaths()
+
+        print("Paths", paths)
+        if os.path.isfile(r"UserResources\save.json"):
+            with open(r"UserResources\save.json") as j_obj:
+                checked = json.load(j_obj)
+
+        else:
+            checked = False
+
+        self.settings.deSerialize(paths, checked)
+
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:  # todo: save files before closing
 
-        # directories = self.settings.directories()
-        # files = self.myMusic.getFilePaths()
-        #
-        # self.db_handler.insertToPaths(directories)
-        # self.db_handler.insertToFiles(files)
-        #
-        # print("Files: ", self.db_handler.getFiles())
-        # print(self.db_handler.getPaths())
-
+        self.serialize()
         super(MainWindow, self).closeEvent(a0)

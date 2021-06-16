@@ -7,7 +7,6 @@ from CustomWidgets.ScrollArea import ScrollView
 from CustomWidgets.FadeLabel import FadeLabel
 
 
-#fixme: unable to close the collection tile properly
 class CollectionTile(Tile):  # collection tile
 
     playing = QtCore.pyqtSignal(object)
@@ -17,8 +16,6 @@ class CollectionTile(Tile):  # collection tile
 
     def __init__(self, collection_name, *args, **kwargs):
         super(CollectionTile, self).__init__(*args, **kwargs)
-
-        self.setStyleSheet('background-color: red;')
 
         self._children = set()
         self._collection_name = collection_name
@@ -34,6 +31,8 @@ class CollectionTile(Tile):  # collection tile
     def initUI(self):
         self.setLayout(QtWidgets.QVBoxLayout())
 
+        self.setObjectName("CollectionTile")
+
         self.thumb_nail = FadeLabel()
         self.thumb_nail.setScaledContents(True)
         self.thumb_nail.setLayout(QtWidgets.QVBoxLayout())
@@ -41,12 +40,15 @@ class CollectionTile(Tile):  # collection tile
         self.scroll_view = CollectionTileScrollView()
         self.scroll_view.closed.connect(self.closed.emit)
 
-        self.btns = QtWidgets.QWidget()
+        self.btns = QtWidgets.QWidget(objectName="ButtonGroup")
         self.btns.setLayout(QtWidgets.QHBoxLayout())
         self.btns.hide()
 
-        delete_collection_btn = QtWidgets.QPushButton("Collection", clicked=self.deleteLater)
+        delete_collection_btn = QtWidgets.QPushButton(icon=QtGui.QIcon(Paths.DELETE_BIN), clicked=self.deleteLater)
+        delete_collection_btn.setFixedSize(50, 50)
+
         self.play_btn = QtWidgets.QPushButton(icon=QtGui.QIcon(Paths.PLAY), clicked=self.play_pause)
+        self.play_btn.setFixedSize(50, 50)
 
         collection_label = EditableLabel(self._collection_name, alignment=QtCore.Qt.AlignCenter)
         collection_label.textChanged.connect(self.setCollectionName)
@@ -55,8 +57,9 @@ class CollectionTile(Tile):  # collection tile
         self.btns.layout().addWidget(delete_collection_btn)
         self.btns.layout().addWidget(self.play_btn)
 
-        self.thumb_nail.layout().addWidget(self.btns, alignment=QtCore.Qt.AlignBottom)
+        # self.thumb_nail.layout().addWidget(self.btns, alignment=QtCore.Qt.AlignBottom)
         self.layout().addWidget(self.thumb_nail)
+        self.layout().addWidget(self.btns)
         self.layout().addWidget(collection_label)
 
     def setThumbNail(self, thumb_nail):
@@ -75,7 +78,6 @@ class CollectionTile(Tile):  # collection tile
     def removeFromCollection(self, obj):
 
         widgets = self.scroll_view.getWidgets()
-        print(widgets)
         for x in widgets:
             if x.musicObj == obj:
                 x.deleteLater()
@@ -89,7 +91,6 @@ class CollectionTile(Tile):  # collection tile
 
         if self.timer:
             self.timer.stop()
-            # self.timer.deleteLater()
 
         if not self._playing and self.isVisible():
 
@@ -151,7 +152,6 @@ class CollectionTile(Tile):  # collection tile
         super(CollectionTile, self).mousePressEvent(event)
 
     def showEvent(self, event: QtGui.QShowEvent) -> None:
-        print("Showing")
         self.updateThumbNail()
         super(CollectionTile, self).showEvent(event)
 
@@ -175,10 +175,10 @@ class CollectionTile(Tile):  # collection tile
 
     def deleteLater(self) -> None:
 
-        collection_cpy = self._collection_children.copy()
+        widgets = self.scroll_view.getWidgets()
 
-        for x in collection_cpy:
-            self.removeFromCollection(x)
+        for x in widgets:
+            x.delete()
 
         super(CollectionTile, self).deleteLater()
 
@@ -194,6 +194,7 @@ class CollectionInnerTile(Tile):  # This is tile inside the Collections
     def __init__(self, music_object, collection_object: CollectionTile, *args, **kwargs):
         super(CollectionInnerTile, self).__init__(*args, **kwargs)
 
+        self.setObjectName("CollectionInnerTile")
         self.setLayout(QtWidgets.QVBoxLayout())
         self.parent = music_object
         self.parent.addChild(self)
@@ -201,6 +202,7 @@ class CollectionInnerTile(Tile):  # This is tile inside the Collections
         self.collection_object = collection_object
 
         self.thumb_nail = QtWidgets.QLabel()
+        self.thumb_nail.setLayout(QtWidgets.QVBoxLayout())
         self.thumb_nail.setScaledContents(True)
         self.thumb_nail.setPixmap(self.parent.getThumbnail())
 
@@ -208,14 +210,17 @@ class CollectionInnerTile(Tile):  # This is tile inside the Collections
 
         btns = QtWidgets.QButtonGroup(self)
 
-        self.btns = QtWidgets.QWidget()
+        self.btns = QtWidgets.QWidget(objectName="ButtonGroup")
+        self.btns.setLayout(QtWidgets.QHBoxLayout())
 
         self.play_btn = QtWidgets.QPushButton(objectName="PlayButton")
         self.play_btn.setIcon(QtGui.QIcon(Paths.PLAY))
+        self.play_btn.setFixedSize(50, 50)
 
         self.delete_btn = QtWidgets.QPushButton(objectName="Collection")
         self.delete_btn.setToolTip("remove from Collection")
-        self.delete_btn.setIcon(QtGui.QIcon(Paths.DELETE_BIN))  # todo: add a delete icon
+        self.delete_btn.setIcon(QtGui.QIcon(Paths.DELETE_BIN))
+        self.delete_btn.setFixedSize(50, 50)
 
         if self.parent.isPlaying():
             self.update_play()
@@ -223,9 +228,6 @@ class CollectionInnerTile(Tile):  # This is tile inside the Collections
         btns.addButton(self.play_btn)
         btns.addButton(self.delete_btn)
         btns.buttonClicked.connect(self.clicked)
-
-        self.btns = QtWidgets.QWidget()
-        self.btns.setLayout(QtWidgets.QHBoxLayout())
 
         self.btns.layout().addWidget(self.delete_btn, alignment=QtCore.Qt.AlignBottom)
         self.btns.layout().addWidget(self.play_btn, alignment=QtCore.Qt.AlignBottom)
@@ -235,12 +237,16 @@ class CollectionInnerTile(Tile):  # This is tile inside the Collections
         self.shadow_effect = QtWidgets.QGraphicsDropShadowEffect()
         self.shadow_effect.setBlurRadius(5)
         self.shadow_effect.setOffset(3, 3)
+        self.shadow_effect.setColor(QtGui.QColor(255, 255, 255))
+
+        self.play_btn.setGraphicsEffect(self.shadow_effect)
+        self.delete_btn.setGraphicsEffect(self.shadow_effect)
         self.btns.setGraphicsEffect(self.shadow_effect)
+
+        self.thumb_nail.layout().addWidget(self.btns, alignment=QtCore.Qt.AlignBottom)
 
         self.layout().addWidget(self.thumb_nail)
         self.layout().addWidget(self.title)
-
-        self.layout().addWidget(self.btns)
 
     def update_play(self):
         self.play_btn.setIcon(QtGui.QIcon(Paths.PAUSE))
@@ -270,13 +276,15 @@ class CollectionInnerTile(Tile):  # This is tile inside the Collections
                 self.play()
 
         elif btn == self.delete_btn:
-            self.parent.clicked(btn)
+            self.deleteTile()
 
-    def deleteLater(self) -> None:
-        # self.parent.clicked(self.delete_btn)
-        self.parent._collection = True
+    def deleteTile(self):
+        self.parent.clicked(self.delete_btn)
         self.parent.removeChild(self)
-        super(CollectionInnerTile, self).deleteLater()
+
+    def delete(self):
+        self.parent.updateCollection()
+        self.parent.removeChild(self)
 
     def checkFavourite(self):  # necessary just use this
         pass
@@ -292,7 +300,6 @@ class CollectionTileScrollView(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super(CollectionTileScrollView, self).__init__(*args, **kwargs)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-
         self.setLayout(QtWidgets.QVBoxLayout())
 
         self.close_btn = QtWidgets.QPushButton('X', clicked=self.close)

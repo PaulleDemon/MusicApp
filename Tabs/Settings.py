@@ -43,13 +43,13 @@ class Settings(QtWidgets.QWidget):  # settings tab has ability to add new local 
 
         self.notify = Notifier()
 
-        self.addRow()
-
-    def addRow(self):
+    def addRow(self, path=''):
 
         editable_label = PathEdit()
         editable_label.path_edited.connect(self._path_added)
         editable_label.path_deleted.connect(self._path_deleted)
+
+        editable_label.setText(path)
 
         self.v_layout.insertWidget(self.v_layout.count() - 1, editable_label, alignment=QtCore.Qt.AlignTop)
 
@@ -75,6 +75,19 @@ class Settings(QtWidgets.QWidget):  # settings tab has ability to add new local 
                 paths.add(path.getText())
 
         return paths
+
+    def serialize(self):
+        return self.directories(), self.auto_play_check_btn.isChecked()
+
+    def deSerialize(self, paths, btn_checked):
+
+        self.auto_play_check_btn.setChecked(btn_checked)
+
+        for index, path in paths:
+            if path:
+                self.addRow(path)
+
+        self.addRow()
 
 
 class PathEdit(QtWidgets.QWidget):
@@ -122,6 +135,10 @@ class PathEdit(QtWidgets.QWidget):
 
     def getText(self):
         return self.path_edit.text()
+
+    def setText(self, text):
+        self.path_edit.setText(text)
+        self.path_edited.emit(text)
 
     def remove_path(self):
         self.path_deleted.emit(self.path_edit.text())

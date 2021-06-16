@@ -14,6 +14,9 @@ class Notifier:
     _current_playing_tile = None
     _current_playing_collection = None
 
+    with open(r'Resources/DarkTheme.qss') as style:
+        _style = style.read()
+
     def __init__(self):
         self._playing = False
 
@@ -162,6 +165,7 @@ class Notifier:
             return
 
         new_dialog = CollectionDialog()
+        new_dialog.setStyleSheet(self._style)
         new_dialog.addItems(self._collection_tab.getCollections())
         new_dialog.collection_edit.setFocus()
         if new_dialog.exec_():
@@ -178,6 +182,7 @@ class CollectionDialog(QtWidgets.QDialog):  # This is a collection dialog that a
     def __init__(self, *args, **kwargs):
         super(CollectionDialog, self).__init__(*args, **kwargs)
         self.setWindowFlags(QtCore.Qt.FramelessWindowHint | QtCore.Qt.Popup)
+        self.setObjectName("CollectionDialog")
 
         self.setLayout(QtWidgets.QVBoxLayout())
         self.layout().setContentsMargins(0, 0, 0, 0)
