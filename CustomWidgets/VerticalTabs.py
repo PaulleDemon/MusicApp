@@ -43,6 +43,12 @@ class TabWidget(QtWidgets.QWidget):
     def player_object(self):
         return self.currently_playing
 
+    def musicCount(self):
+        return self.currently_playing.musicCount()
+
+    def setMusicCount(self, music_count: dict):
+        self.currently_playing.setMusicCount(music_count)
+
     def enterEvent(self, a0: QtCore.QEvent):
         super(TabWidget, self).enterEvent(a0)
 

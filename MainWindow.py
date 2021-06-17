@@ -52,6 +52,7 @@ class MainWindow(QtWidgets.QWidget):
         self.notifier.setMusicTab(self.myMusic)
         self.notifier.setFavouriteTab(self.favourites)
         self.notifier.setCollectionTab(self.musicCollections)
+        self.notifier.setStatisticsTab(self.statistics)
 
         self.settings.path_added.connect(self.myMusic.notify)
         self.settings.autoPlayChecked.connect(self.notifier.enableAutoPlay)
@@ -78,8 +79,13 @@ class MainWindow(QtWidgets.QWidget):
 
         self.db_handler.insertToPaths(paths)
 
+        music_count = self.tabWidget.musicCount()
+        print(music_count)
+
+        json_dict = {"auto_play": checked, "music_count": music_count}
+
         with open(r"UserResources\save.json", 'w') as j_obj:
-            json.dump(checked, j_obj)
+            json.dump(json_dict, j_obj)
 
         print("Paths: ", paths)
         print("Checked: ", checked)
@@ -91,12 +97,16 @@ class MainWindow(QtWidgets.QWidget):
         print("Paths", paths)
         if os.path.isfile(r"UserResources\save.json"):
             with open(r"UserResources\save.json") as j_obj:
-                checked = json.load(j_obj)
+                json_dict = json.load(j_obj)
+
+                checked, music_count = json_dict['auto_play'], json_dict['music_count']
 
         else:
             checked = False
+            music_count = {}
 
         self.settings.deSerialize(paths, checked)
+        self.tabWidget.setMusicCount(music_count)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:  # todo: save files before closing
 

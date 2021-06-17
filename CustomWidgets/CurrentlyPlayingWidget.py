@@ -10,6 +10,8 @@ class CurrentlyPlaying(QtWidgets.QWidget):
     current_file = ""
     current_tile = None
 
+    music_count = {}
+
     playing = QtCore.pyqtSignal(bool)
     current_tile_changed = QtCore.pyqtSignal(object)
 
@@ -114,8 +116,21 @@ class CurrentlyPlaying(QtWidgets.QWidget):
     def setCurrentPath(self, path: str):
         self.current_file = path
 
+    def setMusicCount(self, music_count: dict):
+        self.music_count = music_count
+
+    def musicCount(self):
+        return self.music_count
+
     def setTitle(self, text):
         self.title.setText(text)
+        if text not in self.music_count.keys():
+            self.music_count[text] = 1
+
+        else:
+            self.music_count[text] += 1
+
+        print("Count: ", self.music_count)
 
     def setVolume(self, value):
         self.player.setMuted(False)
@@ -204,7 +219,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         if self.player.mediaStatus() in [QtMultimedia.QMediaPlayer.NoMedia, QtMultimedia.QMediaPlayer.InvalidMedia]:
             return
 
-        duration = QtCore.QDateTime.fromTime_t(value / 1000).toUTC().toString("hh:mm:ss")
+        duration = QtCore.QDateTime.fromSecsSinceEpoch(value / 1000).toUTC().toString("hh:mm:ss")
         self.progress_lbl.setText(f"{duration}/{self._formatted_duration}")
 
     def changeSliderPos(self, value):
@@ -225,7 +240,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
     def setDuration(self, duration):
         self._duration = duration
-        self._formatted_duration = QtCore.QDateTime.fromTime_t(duration / 1000).toUTC().toString("hh:mm:ss")
+        self._formatted_duration = QtCore.QDateTime.fromSecsSinceEpoch(duration / 1000).toUTC().toString("hh:mm:ss")
         self.progress.setRange(0, duration)
         self.setProgressLabel(duration)
 
