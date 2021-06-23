@@ -80,33 +80,30 @@ class MainWindow(QtWidgets.QWidget):
         self.db_handler.insertToPaths(paths)
 
         music_count = self.tabWidget.musicCount()
-        print(music_count)
+        volume = self.tabWidget.volume()
 
-        json_dict = {"auto_play": checked, "music_count": music_count}
-
+        json_dict = {"auto_play": checked, "volume": volume, "music_count": music_count}
         with open(r"UserResources\save.json", 'w') as j_obj:
             json.dump(json_dict, j_obj)
-
-        print("Paths: ", paths)
-        print("Checked: ", checked)
 
     def deSerialize(self):
 
         paths = self.db_handler.getPaths()
 
-        print("Paths", paths)
         if os.path.isfile(r"UserResources\save.json"):
             with open(r"UserResources\save.json") as j_obj:
                 json_dict = json.load(j_obj)
 
-                checked, music_count = json_dict['auto_play'], json_dict['music_count']
+                checked, volume, music_count = json_dict['auto_play'], json_dict['volume'], json_dict['music_count']
 
         else:
             checked = False
             music_count = {}
+            volume = 70
 
         self.settings.deSerialize(paths, checked)
         self.tabWidget.setMusicCount(music_count)
+        self.tabWidget.setVolume(volume)
 
     def closeEvent(self, a0: QtGui.QCloseEvent) -> None:  # todo: save files before closing
 

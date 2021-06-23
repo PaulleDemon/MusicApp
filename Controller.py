@@ -66,7 +66,6 @@ class Notifier:
         self._playing = self._player.isPlaying()
 
         self.updateStatisticsChart(self._player.musicCount())
-        print("Changed....")
 
         if self._playing:
             self.play()
@@ -90,6 +89,7 @@ class Notifier:
         self._player.setCurrentPath(obj.getFile())
         self._player.setPlaylistIndex(self._current_playing_tile)
         self._player.load_file()
+        self.updateStatisticsChart(self._player.musicCount())
 
     def loadMusicPlayList(self, obj: MusicTile):  # loads musics from MyMusic tab to playlist
 

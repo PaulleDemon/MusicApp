@@ -81,9 +81,9 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self.volume_indicator.clicked.connect(self.setMuted)
 
         self.volume_slider = Slider(QtCore.Qt.Horizontal)
-        self.volume_slider.valueChanged.connect(self.setVolume)
+        self.volume_slider.valueChanged.connect(self._setVolume)
         self.volume_slider.setRange(0, 100)
-        self.volume_slider.setSliderPosition(70)
+        # self.volume_slider.setSliderPosition(70)
 
         grid_layout.addWidget(self.thumb_nail, 0, 0, 1, 3)
         grid_layout.addWidget(self.title, 1, 0, 1, 3)
@@ -122,6 +122,13 @@ class CurrentlyPlaying(QtWidgets.QWidget):
     def musicCount(self):
         return self.music_count
 
+    def volume(self):
+        return self.volume_slider.value()
+
+    def setVolume(self, vol):
+        self.volume_slider.setSliderPosition(vol)
+        self.volume_slider.valueChanged.emit(vol)
+
     def setTitle(self, text):
         self.title.setText(text)
         if text not in self.music_count.keys():
@@ -130,12 +137,9 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         else:
             self.music_count[text] += 1
 
-        print("Count: ", self.music_count)
-
-    def setVolume(self, value):
+    def _setVolume(self, value):
         self.player.setMuted(False)
         self.player.setVolume(value)
-
         if value == 0:
             image_path = Paths.VOLUME_LVL_0
 
@@ -157,7 +161,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
             self.volume_indicator.setPixmap(QtGui.QPixmap(Paths.MUTED))
 
         else:
-            self.setVolume(self.volume_slider.value())
+            self._setVolume(self.volume_slider.value())
 
     def load_file(self):
         self.play_pause_btn.setEnabled(True)
