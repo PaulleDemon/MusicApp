@@ -27,6 +27,7 @@ class Notifier:
         self._music_tab = None
         self._favourite_tab = None
         self._collection_tab = None
+        self._statics_tab = None
 
     def enableAutoPlay(self, enable=False):  # enable auto next
         self._player.autoPlayNext(enable)
@@ -40,6 +41,13 @@ class Notifier:
 
     def setFavouriteTab(self, fav):  # register favourite's tab
         self._favourite_tab = fav
+
+    def setStatisticsTab(self, stat):
+        self._statics_tab = stat
+
+    def updateStatisticsChart(self, music_count):
+        print("updating...")
+        self._statics_tab.plotAxis(music_count)
 
     def setCollectionTab(self, tab):  # registers the collection tab
         self._collection_tab = tab
@@ -56,6 +64,8 @@ class Notifier:
         self._current_playing_tile.pause()
         self._current_playing_tile = obj
         self._playing = self._player.isPlaying()
+
+        self.updateStatisticsChart(self._player.musicCount())
 
         if self._playing:
             self.play()
@@ -79,6 +89,7 @@ class Notifier:
         self._player.setCurrentPath(obj.getFile())
         self._player.setPlaylistIndex(self._current_playing_tile)
         self._player.load_file()
+        self.updateStatisticsChart(self._player.musicCount())
 
     def loadMusicPlayList(self, obj: MusicTile):  # loads musics from MyMusic tab to playlist
 

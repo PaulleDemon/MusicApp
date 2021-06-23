@@ -10,6 +10,8 @@ class CurrentlyPlaying(QtWidgets.QWidget):
     current_file = ""
     current_tile = None
 
+    music_count = {}
+
     playing = QtCore.pyqtSignal(bool)
     current_tile_changed = QtCore.pyqtSignal(object)
 
@@ -79,9 +81,9 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         self.volume_indicator.clicked.connect(self.setMuted)
 
         self.volume_slider = Slider(QtCore.Qt.Horizontal)
-        self.volume_slider.valueChanged.connect(self.setVolume)
+        self.volume_slider.valueChanged.connect(self._setVolume)
         self.volume_slider.setRange(0, 100)
-        self.volume_slider.setSliderPosition(70)
+        # self.volume_slider.setSliderPosition(70)
 
         grid_layout.addWidget(self.thumb_nail, 0, 0, 1, 3)
         grid_layout.addWidget(self.title, 1, 0, 1, 3)
@@ -114,13 +116,30 @@ class CurrentlyPlaying(QtWidgets.QWidget):
     def setCurrentPath(self, path: str):
         self.current_file = path
 
+    def setMusicCount(self, music_count: dict):
+        self.music_count = music_count
+
+    def musicCount(self):
+        return self.music_count
+
+    def volume(self):
+        return self.volume_slider.value()
+
+    def setVolume(self, vol):
+        self.volume_slider.setSliderPosition(vol)
+        self.volume_slider.valueChanged.emit(vol)
+
     def setTitle(self, text):
         self.title.setText(text)
+        if text not in self.music_count.keys():
+            self.music_count[text] = 1
 
-    def setVolume(self, value):
+        else:
+            self.music_count[text] += 1
+
+    def _setVolume(self, value):
         self.player.setMuted(False)
         self.player.setVolume(value)
-
         if value == 0:
             image_path = Paths.VOLUME_LVL_0
 
@@ -142,7 +161,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
             self.volume_indicator.setPixmap(QtGui.QPixmap(Paths.MUTED))
 
         else:
-            self.setVolume(self.volume_slider.value())
+            self._setVolume(self.volume_slider.value())
 
     def load_file(self):
         self.play_pause_btn.setEnabled(True)
@@ -204,7 +223,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
         if self.player.mediaStatus() in [QtMultimedia.QMediaPlayer.NoMedia, QtMultimedia.QMediaPlayer.InvalidMedia]:
             return
 
-        duration = QtCore.QDateTime.fromTime_t(value / 1000).toUTC().toString("hh:mm:ss")
+        duration = QtCore.QDateTime.fromSecsSinceEpoch(value / 1000).toUTC().toString("hh:mm:ss")
         self.progress_lbl.setText(f"{duration}/{self._formatted_duration}")
 
     def changeSliderPos(self, value):
@@ -225,7 +244,7 @@ class CurrentlyPlaying(QtWidgets.QWidget):
 
     def setDuration(self, duration):
         self._duration = duration
-        self._formatted_duration = QtCore.QDateTime.fromTime_t(duration / 1000).toUTC().toString("hh:mm:ss")
+        self._formatted_duration = QtCore.QDateTime.fromSecsSinceEpoch(duration / 1000).toUTC().toString("hh:mm:ss")
         self.progress.setRange(0, duration)
         self.setProgressLabel(duration)
 

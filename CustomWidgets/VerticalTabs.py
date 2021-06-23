@@ -30,7 +30,6 @@ class TabWidget(QtWidgets.QWidget):
         self.tab_playing_holder.addLayout(currently_playing_layout)
 
         self.widgetLayout = QtWidgets.QVBoxLayout()
-        # self.widgetLayout.setContentsMargins(0, 0, 0, 0)
 
         self.layout().addWidget(self.tabWidget)
         self.layout().addLayout(self.widgetLayout)
@@ -42,6 +41,18 @@ class TabWidget(QtWidgets.QWidget):
 
     def player_object(self):
         return self.currently_playing
+
+    def musicCount(self):  # returns the count of musics played
+        return self.currently_playing.musicCount()
+
+    def setMusicCount(self, music_count: dict):
+        self.currently_playing.setMusicCount(music_count)
+
+    def volume(self):
+        return self.currently_playing.volume()
+
+    def setVolume(self, vol):
+        self.currently_playing.setVolume(vol)
 
     def enterEvent(self, a0: QtCore.QEvent):
         super(TabWidget, self).enterEvent(a0)
